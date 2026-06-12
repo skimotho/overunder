@@ -1,1711 +1,1455 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Deriv Digits Trader | skimotho</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-<style>
-/* ── DESIGN TOKENS ── */
-:root {
-  --bg:        #070a10;
-  --bg2:       #0d1117;
-  --bg3:       #161b27;
-  --bg4:       #1c2333;
-  --border:    #21293b;
-  --border2:   #2d3a52;
-  --accent:    #6366f1;
-  --accent2:   #818cf8;
-  --accent-glow: rgba(99,102,241,0.2);
-  --green:     #10b981;
-  --green-bg:  rgba(16,185,129,0.08);
-  --red:       #ef4444;
-  --red-bg:    rgba(239,68,68,0.08);
-  --amber:     #f59e0b;
-  --text:      #e2e8f0;
-  --text2:     #94a3b8;
-  --text3:     #4b5563;
-  --card-r:    12px;
-  --card-r2:   8px;
-  --glow:      0 0 0 1px var(--border), 0 8px 32px rgba(0,0,0,0.4);
-  --glow-accent: 0 0 0 1px rgba(99,102,241,0.4), 0 0 20px rgba(99,102,241,0.15);
-  --tr:        0.15s ease;
-  --sidebar-w: 260px;
-  --panel-w:   300px;
-  --topbar-h:  58px;
-}
-body.light {
-  --bg:        #f1f5f9;
-  --bg2:       #ffffff;
-  --bg3:       #f8fafc;
-  --bg4:       #f1f5f9;
-  --border:    #e2e8f0;
-  --border2:   #cbd5e1;
-  --text:      #0f172a;
-  --text2:     #64748b;
-  --text3:     #94a3b8;
-  --glow:      0 0 0 1px var(--border), 0 4px 16px rgba(0,0,0,0.08);
-  --accent-glow: rgba(99,102,241,0.12);
-  --green-bg:  rgba(16,185,129,0.07);
-  --red-bg:    rgba(239,68,68,0.07);
-}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deriv 1HZ10V Bot – OVER/UNDER Dual Contract</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* ── Design tokens ── */
+        :root {
+            --bg:           #0b0d11;
+            --bg-panel:     #14171f;
+            --bg-input:     #0e1117;
+            --bg-row:       #1a1e28;
+            --border:       #2a2f3d;
+            --border-soft:  #1f2330;
+            --accent:       #f5a623;
+            --accent-dim:   rgba(245,166,35,0.14);
+            --cyan:         #38cfe2;
+            --cyan-dim:     rgba(56,207,226,0.13);
+            --green:        #2edf78;
+            --green-dim:    rgba(46,223,120,0.13);
+            --red:          #f2495c;
+            --red-dim:      rgba(242,73,92,0.13);
+            --amber:        #f5a623;
+            --text-primary: #eef0f6;
+            --text-secondary:#a0a8bc;
+            --text-muted:   #5a6278;
+            --mono:         'Space Mono', monospace;
+            --sans:         'Syne', sans-serif;
+            --radius:       7px;
+            --transition:   0.18s cubic-bezier(0.4,0,0.2,1);
+        }
+        [data-theme="light"] {
+            --bg:           #edf0f7;
+            --bg-panel:     #ffffff;
+            --bg-input:     #e4e8f2;
+            --bg-row:       #f2f4fa;
+            --border:       #c8cfe0;
+            --border-soft:  #dde1ed;
+            --text-primary: #141826;
+            --text-secondary:#4d566e;
+            --text-muted:   #8892aa;
+            --accent-dim:   rgba(245,166,35,0.18);
+            --cyan-dim:     rgba(56,207,226,0.18);
+            --green-dim:    rgba(46,223,120,0.18);
+            --red-dim:      rgba(242,73,92,0.18);
+        }
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; }
-body {
-  font-family: 'Inter', sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  min-height: 100vh;
-  transition: background var(--tr), color var(--tr);
-  overflow-x: hidden;
-  font-size: 14px;
-  line-height: 1.5;
-}
+        /* ── Reset & base ── */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { font-size: 15px; }
+        body {
+            font-family: var(--sans);
+            background: var(--bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 28px 24px;
+            transition: background var(--transition), color var(--transition);
+            line-height: 1.55;
+        }
 
-/* ── SCROLLBAR ── */
-::-webkit-scrollbar { width: 4px; height: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: var(--text3); }
+        /* Subtle grid texture */
+        body::before {
+            content: '';
+            position: fixed; inset: 0;
+            background-image:
+                linear-gradient(var(--border-soft) 1px, transparent 1px),
+                linear-gradient(90deg, var(--border-soft) 1px, transparent 1px);
+            background-size: 40px 40px;
+            opacity: 0.4;
+            pointer-events: none;
+            z-index: 0;
+        }
 
-/* ── TOPBAR ── */
-#topbar {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 0 20px; height: var(--topbar-h);
-  background: var(--bg2);
-  border-bottom: 1px solid var(--border);
-  position: sticky; top: 0; z-index: 100;
-  backdrop-filter: blur(12px);
-}
-.logo {
-  display: flex; align-items: center; gap: 10px;
-  font-family: 'JetBrains Mono', monospace; font-size: 1rem; font-weight: 700;
-  letter-spacing: -0.5px; color: var(--text);
-}
-.logo-icon {
-  width: 28px; height: 28px; border-radius: 7px;
-  background: linear-gradient(135deg, var(--accent), #8b5cf6);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 0.75rem; color: #fff; font-weight: 700; flex-shrink: 0;
-}
-.logo-text span { color: var(--accent2); }
-.topbar-center {
-  display: flex; align-items: center; gap: 6px;
-}
-.topbar-right { display: flex; align-items: center; gap: 8px; }
+        /* ── Layout ── */
+        .wrapper { max-width: 1280px; margin: 0 auto; position: relative; z-index: 1; }
 
-/* ── BADGES ── */
-.badge {
-  display: inline-flex; align-items: center; gap: 5px;
-  font-size: 0.7rem; font-weight: 600; padding: 3px 9px; border-radius: 20px;
-  font-family: 'JetBrains Mono', monospace; letter-spacing: 0.3px;
-  border: 1px solid var(--border); background: var(--bg3); color: var(--text2);
-}
-.badge.live {
-  color: var(--green); border-color: rgba(16,185,129,0.3);
-  background: rgba(16,185,129,0.08);
-}
-.badge.live::before { content:''; width:6px; height:6px; border-radius:50%; background:var(--green); animation: livepulse 2s infinite; }
-@keyframes livepulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
-.badge.demo { color: var(--amber); border-color: rgba(245,158,11,0.3); background: rgba(245,158,11,0.08); }
+        /* ── Header ── */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 28px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        .header-brand { display: flex; flex-direction: column; gap: 4px; }
+        .brand-eyebrow {
+            font-family: var(--mono);
+            font-size: 10px;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--accent);
+        }
+        .brand-title {
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            color: var(--text-primary);
+        }
+        .brand-title span { color: var(--accent); }
+        .brand-sub {
+            font-size: 11px;
+            color: var(--text-secondary);
+            font-family: var(--mono);
+        }
 
-/* ── ICON BUTTONS ── */
-.icon-btn {
-  width: 32px; height: 32px; border-radius: var(--card-r2); border: 1px solid var(--border);
-  background: var(--bg3); color: var(--text2); cursor: pointer;
-  display: flex; align-items: center; justify-content: center; font-size: 0.9rem;
-  transition: all var(--tr);
-}
-.icon-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-glow); }
+        .header-controls { display: flex; align-items: center; gap: 12px; }
 
-/* ── LAYOUT ── */
-#app { display: none; }
-#login-screen {
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  min-height: calc(100vh - var(--topbar-h)); padding: 40px 20px; text-align: center;
-}
+        /* ── Theme toggle ── */
+        .theme-toggle {
+            width: 52px; height: 28px;
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            cursor: pointer;
+            position: relative;
+            transition: background var(--transition), border-color var(--transition);
+            flex-shrink: 0;
+        }
+        .theme-toggle::after {
+            content: '';
+            position: absolute;
+            top: 3px; left: 3px;
+            width: 20px; height: 20px;
+            border-radius: 50%;
+            background: var(--accent);
+            transition: transform var(--transition);
+        }
+        [data-theme="light"] .theme-toggle::after { transform: translateX(24px); }
+        .theme-toggle-label {
+            font-family: var(--mono);
+            font-size: 10px;
+            color: var(--text-secondary);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
 
-/* ── AUTH CARD ── */
-.auth-card {
-  background: var(--bg2); border: 1px solid var(--border);
-  border-radius: 20px; padding: 48px 44px; max-width: 420px; width: 100%;
-  box-shadow: var(--glow);
-  animation: fadeUp 0.5s cubic-bezier(0.16,1,0.3,1) both;
-}
-.auth-logo {
-  width: 52px; height: 52px; border-radius: 14px; margin: 0 auto 20px;
-  background: linear-gradient(135deg, var(--accent), #8b5cf6);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 1.5rem; font-weight: 700; color: #fff;
-  box-shadow: 0 8px 24px rgba(99,102,241,0.3);
-}
-@keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
-.auth-card h1 { font-size: 1.5rem; font-weight: 700; margin-bottom: 8px; letter-spacing: -0.5px; }
-.auth-card p { color: var(--text2); font-size: 0.875rem; line-height: 1.7; margin-bottom: 32px; }
+        /* ── Status badges ── */
+        .status-badge {
+            display: flex; align-items: center; gap-8px;
+            padding: 6px 14px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            background: var(--bg-panel);
+            font-family: var(--mono);
+            font-size: 10px;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            gap: 8px;
+            transition: background var(--transition), border-color var(--transition);
+        }
+        .status-dot {
+            width: 7px; height: 7px;
+            border-radius: 50%;
+            background: var(--text-muted);
+            flex-shrink: 0;
+        }
+        .status-dot.connected { background: var(--green); box-shadow: 0 0 6px var(--green); }
+        .status-dot.disconnected { background: var(--red); animation: pulse 1.4s infinite; }
+        .status-dot.running { background: var(--green); box-shadow: 0 0 6px var(--green); }
+        .status-dot.paused { background: var(--amber); box-shadow: 0 0 6px var(--amber); }
+        .status-dot.idle { background: var(--text-muted); }
+        @keyframes pulse {
+            0%,100% { opacity: 1; } 50% { opacity: 0.3; }
+        }
 
-/* ── BUTTONS ── */
-.btn {
-  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-  padding: 11px 24px; border-radius: 9px; font-size: 0.875rem; font-weight: 600;
-  cursor: pointer; border: none; transition: all var(--tr); width: 100%;
-  font-family: 'Inter', sans-serif; letter-spacing: 0.1px;
-}
-.btn-primary {
-  background: linear-gradient(135deg, var(--accent), #8b5cf6);
-  color: #fff; box-shadow: 0 4px 16px rgba(99,102,241,0.35);
-}
-.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(99,102,241,0.5); filter: brightness(1.08); }
-.btn-primary:active { transform: translateY(0); }
-.btn-secondary { background: var(--bg3); color: var(--text); border: 1px solid var(--border); }
-.btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
-.btn-sm { padding: 7px 16px; font-size: 0.8rem; width: auto; border-radius: 7px; }
-.btn-green {
-  background: linear-gradient(135deg, #059669, var(--green));
-  color: #fff; box-shadow: 0 4px 16px rgba(16,185,129,0.3);
-}
-.btn-green:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(16,185,129,0.45); filter: brightness(1.06); }
-.btn-green:disabled { opacity: 0.45; transform: none; cursor: not-allowed; filter: none; box-shadow: none; }
-.btn-red { background: linear-gradient(135deg, #dc2626, var(--red)); color: #fff; box-shadow: 0 4px 16px rgba(239,68,68,0.3); }
-.btn-red:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(239,68,68,0.45); }
+        /* ── Main grid ── */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 370px 1fr;
+            gap: 20px;
+            align-items: start;
+        }
+        @media (max-width: 960px) {
+            .main-grid { grid-template-columns: 1fr; }
+        }
 
-.divider { display:flex; align-items:center; gap:12px; margin:20px 0; color:var(--text3); font-size:0.78rem; }
-.divider::before, .divider::after { content:''; flex:1; height:1px; background:var(--border); }
+        /* ── Panel (card) ── */
+        .panel {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            transition: background var(--transition), border-color var(--transition);
+        }
+        .panel + .panel { margin-top: 20px; }
+        .panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 22px;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-row);
+        }
+        .panel-title {
+            font-size: 11.5px;
+            font-weight: 700;
+            letter-spacing: 0.13em;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            display: flex; align-items: center; gap: 9px;
+        }
+        .panel-title i { color: var(--accent); font-size: 12px; }
+        .panel-body { padding: 22px; }
 
-/* ── MAIN GRID ── */
-#app {
-  display: grid;
-  grid-template-columns: var(--sidebar-w) 1fr var(--panel-w);
-  min-height: calc(100vh - var(--topbar-h));
-}
+        /* ── Form controls ── */
+        .field { margin-bottom: 18px; }
+        .field:last-child { margin-bottom: 0; }
+        .field-label {
+            display: block;
+            font-family: var(--mono);
+            font-size: 10px;
+            letter-spacing: 0.17em;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+        .input-group { display: flex; gap: 8px; }
+        input[type="text"],
+        input[type="password"],
+        input[type="number"] {
+            width: 100%;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 10px 14px;
+            font-family: var(--mono);
+            font-size: 13px;
+            color: var(--text-primary);
+            outline: none;
+            transition: border-color var(--transition), background var(--transition);
+            -moz-appearance: textfield;
+        }
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
+        input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-dim); }
+        input:read-only {
+            color: var(--text-muted);
+            cursor: not-allowed;
+        }
+        .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 
-/* ── SIDEBAR ── */
-#sidebar {
-  background: var(--bg2);
-  border-right: 1px solid var(--border);
-  display: flex; flex-direction: column;
-  overflow: hidden;
-}
-.sidebar-section { padding: 16px 14px 8px; }
-.sidebar-section + .sidebar-section { border-top: 1px solid var(--border); }
-.section-label {
-  font-size: 0.65rem; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase;
-  color: var(--text3); padding: 0 4px 10px; font-family: 'JetBrains Mono', monospace;
-}
-.sidebar-scroll { flex: 1; overflow-y: auto; }
+        /* ── Buttons ── */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 11px 18px;
+            border: 1px solid transparent;
+            border-radius: var(--radius);
+            font-family: var(--sans);
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            cursor: pointer;
+            transition: all var(--transition);
+            white-space: nowrap;
+        }
+        .btn:disabled { opacity: 0.32; cursor: not-allowed; pointer-events: none; }
+        .btn:not(:disabled):hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(0,0,0,0.18); }
+        .btn:not(:disabled):active { transform: translateY(0); box-shadow: none; }
+        .btn-icon {
+            width: 40px; height: 40px;
+            padding: 0;
+            border-radius: var(--radius);
+        }
 
-/* account card */
-.account-card {
-  border: 1px solid var(--border); border-radius: var(--card-r2);
-  padding: 12px; margin-bottom: 6px; cursor: pointer;
-  transition: all var(--tr); background: var(--bg3);
-}
-.account-card:hover { border-color: var(--border2); background: var(--bg4); }
-.account-card.active { border-color: var(--accent); background: rgba(99,102,241,0.06); }
-.ac-id { font-family:'JetBrains Mono',monospace; font-size:0.72rem; color:var(--text2); }
-.ac-bal { font-size:1rem; font-weight:700; font-family:'JetBrains Mono',monospace; margin-top:3px; letter-spacing:-0.5px; }
-.ac-type { font-size:0.7rem; margin-top:6px; }
+        .btn-connect {
+            background: transparent;
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+        .btn-connect:not(:disabled):hover {
+            background: var(--accent);
+            color: #0d0f13;
+        }
+        .btn-start {
+            background: var(--green-dim);
+            border-color: var(--green);
+            color: var(--green);
+        }
+        .btn-start:not(:disabled):hover {
+            background: var(--green);
+            color: #0d0f13;
+        }
+        .btn-pause {
+            background: var(--accent-dim);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+        .btn-pause:not(:disabled):hover {
+            background: var(--accent);
+            color: #0d0f13;
+        }
+        .btn-stop {
+            background: var(--red-dim);
+            border-color: var(--red);
+            color: var(--red);
+        }
+        .btn-stop:not(:disabled):hover {
+            background: var(--red);
+            color: #fff;
+        }
+        .btn-ghost {
+            background: var(--bg-input);
+            border-color: var(--border);
+            color: var(--text-secondary);
+        }
+        .btn-ghost:not(:disabled):hover {
+            border-color: var(--text-secondary);
+            color: var(--text-primary);
+        }
 
-/* market groups */
-.market-group { margin-bottom: 4px; }
-.market-group-label {
-  font-size: 0.62rem; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase;
-  color: var(--text3); padding: 8px 6px 4px; font-family: 'JetBrains Mono', monospace;
-}
-.symbol-item {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 9px 10px; border-radius: 7px; cursor: pointer;
-  transition: all var(--tr); margin-bottom: 1px;
-  border: 1px solid transparent;
-}
-.symbol-item:hover { background: var(--bg3); border-color: var(--border); }
-.symbol-item.active {
-  background: rgba(99,102,241,0.08); border-color: rgba(99,102,241,0.35);
-}
-.sym-name { font-size: 0.825rem; font-weight: 500; color: var(--text); }
-.sym-meta { display: flex; align-items: center; gap: 6px; }
-.sym-tick { font-family:'JetBrains Mono',monospace; font-size:0.75rem; color:var(--text2); }
-.sym-up   { color: var(--green) !important; }
-.sym-down { color: var(--red) !important; }
+        .btn-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 4px;
+        }
+        .btn-full { grid-column: 1 / -1; }
 
-/* ── MAIN CONTENT ── */
-#main { overflow-y: auto; display: flex; flex-direction: column; background: var(--bg); }
+        /* ── Stats bar ── */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        @media (max-width: 720px) {
+            .stats-row { grid-template-columns: repeat(3, 1fr); }
+        }
+        .stat-card {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 18px 14px 16px;
+            text-align: center;
+            transition: background var(--transition), border-color var(--transition);
+        }
+        .stat-label {
+            font-family: var(--mono);
+            font-size: 9.5px;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+        .stat-value {
+            font-family: var(--mono);
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1;
+        }
+        .stat-value.positive { color: var(--green); }
+        .stat-value.negative { color: var(--red); }
+        .stat-value.warn     { color: var(--amber); }
+        .stat-value.info     { color: var(--cyan); }
 
-/* tab bar */
-.tab-bar {
-  display: flex; gap: 2px; padding: 12px 20px 0;
-  border-bottom: 1px solid var(--border);
-  background: var(--bg2);
-}
-.tab {
-  padding: 9px 18px; border-radius: 8px 8px 0 0; font-size: 0.85rem; font-weight: 500;
-  cursor: pointer; color: var(--text2); transition: all var(--tr);
-  border: 1px solid transparent; border-bottom: none; position: relative; top: 1px;
-}
-.tab.active {
-  background: var(--bg); border-color: var(--border); border-bottom-color: var(--bg);
-  color: var(--text); font-weight: 600;
-}
-.tab:hover:not(.active) { color: var(--text); background: var(--bg3); }
-.tab-content { display: none; padding: 20px; flex: 1; }
-.tab-content.active { display: block; }
+        /* ── Stakes preview ── */
+        .stakes-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        .stake-card {
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 14px 18px;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .stake-label {
+            font-family: var(--mono);
+            font-size: 10px;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            font-weight: 700;
+        }
+        .stake-amount {
+            font-family: var(--mono);
+            font-size: 16px;
+            font-weight: 700;
+        }
+        .stake-amount.odd  { color: var(--accent); }
+        .stake-amount.even { color: var(--cyan); }
+        .loss-counts {
+            font-family: var(--mono);
+            font-size: 11px;
+            color: var(--text-secondary);
+            display: flex; align-items: center; gap: 6px;
+        }
+        .loss-counts .lc-odd  { color: var(--accent); font-weight: 700; }
+        .loss-counts .lc-even { color: var(--cyan); font-weight: 700; }
 
-/* ── STATS ROW ── */
-.stats-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 20px; }
-.stat-card {
-  background: var(--bg2); border: 1px solid var(--border); border-radius: var(--card-r);
-  padding: 16px 18px; transition: border-color var(--tr); position: relative; overflow: hidden;
-}
-.stat-card::before {
-  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
-  background: linear-gradient(90deg, transparent, var(--accent), transparent);
-  opacity: 0; transition: opacity var(--tr);
-}
-.stat-card:hover::before { opacity: 1; }
-.stat-card:hover { border-color: var(--border2); }
-.stat-label {
-  font-size: 0.68rem; font-weight: 600; color: var(--text3);
-  text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px;
-}
-.stat-value { font-family:'JetBrains Mono',monospace; font-size: 1.2rem; font-weight: 700; }
-.stat-value.green { color: var(--green); }
-.stat-value.red   { color: var(--red); }
+        /* ── Tick counter ── */
+        .tick-row {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 0 6px 0;
+        }
+        .tick-label {
+            font-family: var(--mono);
+            font-size: 10px;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            font-weight: 700;
+        }
+        .tick-counter {
+            font-family: var(--mono);
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--cyan);
+        }
+        .tick-bar {
+            height: 4px;
+            background: var(--border);
+            border-radius: 2px;
+            margin-bottom: 18px;
+            overflow: hidden;
+        }
+        .tick-bar-fill {
+            height: 100%;
+            background: var(--cyan);
+            border-radius: 2px;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
 
-/* ── TICK DISPLAY ── */
-.tick-display {
-  background: var(--bg2); border: 1px solid var(--border);
-  border-radius: var(--card-r); padding: 20px 24px; margin-bottom: 16px;
-  position: relative; overflow: hidden;
-}
-.tick-display::before {
-  content: ''; position: absolute; inset: 0;
-  background: radial-gradient(ellipse at top right, rgba(99,102,241,0.05) 0%, transparent 60%);
-  pointer-events: none;
-}
-.tick-header { display: flex; align-items: center; gap: 16px; margin-bottom: 14px; flex-wrap: wrap; }
-.tick-symbol-badge {
-  font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; font-weight: 600;
-  color: var(--accent2); background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.2);
-  border-radius: 6px; padding: 3px 10px; letter-spacing: 0.5px;
-}
-.tick-price {
-  font-family:'JetBrains Mono',monospace; font-size: 2.6rem; font-weight: 700;
-  transition: color 0.25s ease; letter-spacing: -1px; line-height: 1;
-}
-.tick-price.up   { color: var(--green); }
-.tick-price.down { color: var(--red); }
-.tick-price.flat { color: var(--text); }
-.tick-change {
-  font-size: 0.75rem; padding: 3px 10px; border-radius: 20px;
-  font-family: 'JetBrains Mono', monospace; font-weight: 500;
-}
-.tick-change.up   { background: var(--green-bg); color: var(--green); border: 1px solid rgba(16,185,129,0.2); }
-.tick-change.down { background: var(--red-bg); color: var(--red); border: 1px solid rgba(239,68,68,0.2); }
+        /* ── Trade log ── */
+        .log-wrap {
+            overflow-y: auto;
+            max-height: 380px;
+        }
+        .log-wrap::-webkit-scrollbar { width: 5px; }
+        .log-wrap::-webkit-scrollbar-track { background: transparent; }
+        .log-wrap::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 
-/* tick tape */
-.tick-tape { display: flex; gap: 5px; overflow: hidden; height: 38px; align-items: center; }
-.tick-dot {
-  width: 30px; height: 30px; border-radius: 7px; display: flex; align-items: center;
-  justify-content: center; font-family: 'JetBrains Mono', monospace; font-size: 0.75rem;
-  font-weight: 700; flex-shrink: 0; transition: all 0.25s ease;
-}
-.tick-dot.even { background: rgba(16,185,129,0.12); color: var(--green); border: 1px solid rgba(16,185,129,0.2); }
-.tick-dot.odd  { background: rgba(239,68,68,0.12);  color: var(--red);   border: 1px solid rgba(239,68,68,0.2); }
-.tick-dot:last-child { box-shadow: 0 0 0 2px rgba(99,102,241,0.4); }
+        table { width: 100%; border-collapse: collapse; }
+        thead th {
+            font-family: var(--mono);
+            font-size: 10px;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            padding: 11px 18px;
+            text-align: center;
+            position: sticky; top: 0;
+            background: var(--bg-row);
+            border-bottom: 1px solid var(--border);
+            font-weight: 700;
+        }
+        tbody tr {
+            border-bottom: 1px solid var(--border-soft);
+            transition: background var(--transition);
+        }
+        tbody tr:hover { background: var(--bg-row); }
+        tbody td {
+            padding: 11px 18px;
+            text-align: center;
+            font-family: var(--mono);
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+        td.td-type { color: var(--text-primary); font-weight: 700; font-size: 12.5px; }
+        td.td-stake { color: var(--text-primary); }
+        .badge {
+            display: inline-block;
+            padding: 3px 9px;
+            border-radius: 4px;
+            font-size: 9.5px;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+        .badge-win  { background: var(--green-dim);  color: var(--green); border: 1px solid rgba(46,223,120,0.35); }
+        .badge-loss { background: var(--red-dim);    color: var(--red);   border: 1px solid rgba(242,73,92,0.35); }
+        td.profit-pos { color: var(--green); font-weight: 700; font-size: 12.5px; }
+        td.profit-neg { color: var(--red);   font-weight: 700; font-size: 12.5px; }
 
-/* ── RIGHT PANEL ── */
-#right-panel {
-  background: var(--bg2); border-left: 1px solid var(--border);
-  display: flex; flex-direction: column; overflow: hidden;
-}
-.panel-header {
-  padding: 16px 18px; border-bottom: 1px solid var(--border);
-  display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
-}
-.panel-title {
-  font-size: 0.78rem; font-weight: 700; color: var(--text);
-  letter-spacing: 0.3px; text-transform: uppercase;
-  font-family: 'JetBrains Mono', monospace;
-}
-.panel-scroll { flex: 1; overflow-y: auto; padding: 16px 18px; }
+        /* ── Right column stack ── */
+        .right-col { display: flex; flex-direction: column; gap: 20px; }
 
-/* ws status pill */
-.ws-status-pill {
-  display: inline-flex; align-items: center; gap: 6px;
-  padding: 5px 10px; border-radius: 20px; font-size: 0.72rem; font-weight: 500;
-  border: 1px solid var(--border); background: var(--bg3); color: var(--text2);
-  font-family: 'JetBrains Mono', monospace;
-}
-.ws-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
-.ws-dot.connected    { background: var(--green); box-shadow: 0 0 6px var(--green); animation: livepulse 2s infinite; }
-.ws-dot.disconnected { background: var(--red); }
-.ws-dot.connecting   { background: var(--amber); animation: livepulse 0.8s infinite; }
+        /* ── Divider ── */
+        .divider {
+            height: 1px;
+            background: var(--border);
+            margin: 16px 0;
+        }
 
-/* ── AUTO-TRADER FORM ── */
-.form-group { margin-bottom: 12px; }
-.form-label {
-  font-size: 0.68rem; font-weight: 700; color: var(--text2); margin-bottom: 5px;
-  display: block; text-transform: uppercase; letter-spacing: 0.6px;
-  font-family: 'JetBrains Mono', monospace;
-}
-.form-select, .form-input {
-  width: 100%; padding: 8px 11px; border-radius: 8px;
-  border: 1px solid var(--border); background: var(--bg3); color: var(--text);
-  font-size: 0.85rem; font-family: 'JetBrains Mono', sans-serif;
-  transition: border-color var(--tr), box-shadow var(--tr);
-  appearance: none; -webkit-appearance: none;
-}
-.form-select {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
-  background-repeat: no-repeat; background-position: right 10px center; padding-right: 32px;
-}
-.form-select:focus, .form-input:focus {
-  outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(99,102,241,0.12);
-}
-.form-input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
-.params-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
-
-/* proposal box */
-.proposal-box {
-  background: var(--bg); border: 1px solid var(--border); border-radius: var(--card-r);
-  padding: 14px; margin-bottom: 14px; overflow: hidden; position: relative;
-}
-.proposal-box::before {
-  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
-  background: linear-gradient(90deg, transparent, var(--accent), transparent);
-}
-.proposal-row {
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 5px 0; font-size: 0.8rem; color: var(--text2);
-}
-.proposal-row + .proposal-row { border-top: 1px solid var(--border); }
-.proposal-row .val { font-family:'JetBrains Mono',monospace; font-weight: 600; color: var(--text); font-size: 0.82rem; }
-.proposal-row .val.profit { color: var(--green); }
-.proposal-row .val.loading { color: var(--text3); font-style: italic; font-weight: 400; font-family: 'Inter', sans-serif; font-size: 0.78rem; }
-
-/* buy button — full width prominent */
-.buy-btn-wrap { margin-bottom: 16px; }
-#buy-btn {
-  width: 100%; padding: 13px; font-size: 0.95rem; font-weight: 700;
-  letter-spacing: 0.3px; border-radius: var(--card-r);
-}
-
-/* divider */
-.panel-divider { height: 1px; background: var(--border); margin: 16px 0; }
-
-/* digit stats */
-.digit-stat-row {
-  display: flex; align-items: center; gap: 8px; padding: 4px 0;
-  border-bottom: 1px solid rgba(255,255,255,0.03);
-}
-.digit-stat-label { font-family:'JetBrains Mono',monospace; font-size: 0.72rem; color: var(--text2); width: 44px; flex-shrink: 0; }
-.digit-stat-bar { flex: 1; height: 4px; background: var(--bg3); border-radius: 2px; overflow: hidden; }
-.digit-stat-fill { height: 100%; border-radius: 2px; background: var(--accent); transition: width 0.4s ease; }
-.digit-stat-pct { font-family:'JetBrains Mono',monospace; font-size: 0.7rem; color: var(--text3); width: 32px; text-align: right; flex-shrink: 0; }
-
-/* ── POSITIONS ── */
-.position-card {
-  background: var(--bg2); border: 1px solid var(--border); border-radius: var(--card-r);
-  padding: 14px; margin-bottom: 10px; transition: all var(--tr);
-  animation: fadeUp 0.25s ease both;
-}
-.position-card:hover { border-color: var(--border2); }
-.pos-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-.pos-id { font-family:'JetBrains Mono',monospace; font-size: 0.7rem; color: var(--text3); }
-.pos-status { font-size: 0.68rem; font-weight: 600; padding: 3px 9px; border-radius: 20px; letter-spacing: 0.4px; }
-.pos-status.open { background: rgba(99,102,241,0.1); color: var(--accent2); border: 1px solid rgba(99,102,241,0.2); }
-.pos-status.won  { background: var(--green-bg); color: var(--green); border: 1px solid rgba(16,185,129,0.2); }
-.pos-status.lost { background: var(--red-bg);   color: var(--red);   border: 1px solid rgba(239,68,68,0.2); }
-.pos-details { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.pos-detail .label { font-size: 0.65rem; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
-.pos-detail .value { font-family:'JetBrains Mono',monospace; font-size: 0.82rem; color: var(--text); font-weight: 500; }
-
-/* ── STATEMENT TABLE ── */
-.table-wrap { overflow-x: auto; border-radius: var(--card-r); border: 1px solid var(--border); }
-.statement-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
-.statement-table th {
-  text-align: left; padding: 10px 14px;
-  background: var(--bg2); border-bottom: 1px solid var(--border);
-  color: var(--text3); font-weight: 600; font-size: 0.68rem;
-  letter-spacing: 0.6px; text-transform: uppercase;
-  font-family: 'JetBrains Mono', monospace; white-space: nowrap;
-}
-.statement-table td {
-  padding: 10px 14px; border-bottom: 1px solid rgba(255,255,255,0.03);
-  white-space: nowrap;
-}
-.statement-table tr:last-child td { border-bottom: none; }
-.statement-table tr:hover td { background: var(--bg3); }
-.profit-cell { color: var(--green); font-family:'JetBrains Mono',monospace; font-weight: 500; }
-.loss-cell   { color: var(--red);   font-family:'JetBrains Mono',monospace; font-weight: 500; }
-.mono { font-family: 'JetBrains Mono', monospace; }
-
-/* ── TOAST ── */
-#toast {
-  position: fixed; bottom: 20px; right: 20px; z-index: 1000;
-  background: var(--bg2); border: 1px solid var(--border); border-radius: 10px;
-  padding: 12px 18px; font-size: 0.83rem; box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-  transform: translateY(72px) scale(0.96); opacity: 0; transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1);
-  max-width: 300px; display: flex; align-items: center; gap: 8px;
-}
-#toast.show { transform: translateY(0) scale(1); opacity: 1; }
-#toast.success { border-color: rgba(16,185,129,0.4); }
-#toast.error   { border-color: rgba(239,68,68,0.4); }
-#toast.info    { border-color: rgba(99,102,241,0.4); }
-
-/* spinner */
-.spinner {
-  width: 15px; height: 15px; border: 2px solid rgba(255,255,255,0.2);
-  border-top-color: #fff; border-radius: 50%; animation: spin 0.65s linear infinite;
-  display: inline-block; flex-shrink: 0;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-
-/* empty */
-.empty { text-align: center; padding: 48px 20px; color: var(--text3); font-size: 0.875rem; }
-.empty-icon { font-size: 2rem; margin-bottom: 10px; opacity: 0.6; }
-
-/* notice */
-.notice {
-  background: rgba(245,158,11,0.07); border: 1px solid rgba(245,158,11,0.2);
-  border-radius: var(--card-r); padding: 12px 14px; font-size: 0.82rem;
-  color: var(--amber); line-height: 1.6;
-}
-.notice.info {
-  background: rgba(99,102,241,0.07); border-color: rgba(99,102,241,0.2); color: var(--accent2);
-}
-
-
-/* ── AUTO-TRADER PANEL ── */
-.auto-panel {
-  background: var(--bg); border: 1px solid var(--border);
-  border-radius: var(--card-r); padding: 14px; margin-bottom: 0;
-}
-.auto-section-title {
-  font-size: 0.65rem; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase;
-  color: var(--text3); padding: 0 0 10px; font-family: 'JetBrains Mono', monospace;
-  border-bottom: 1px solid var(--border); margin-bottom: 12px;
-}
-/* status bar */
-.auto-status-row {
-  display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
-  padding: 8px 11px; border-radius: 8px; font-size: 0.75rem;
-  background: var(--bg2); border: 1px solid var(--border);
-}
-.auto-status-dot {
-  width: 8px; height: 8px; border-radius: 50%; background: var(--text3); flex-shrink: 0;
-}
-.auto-status-dot.idle     { background: var(--text3); }
-.auto-status-dot.watching { background: var(--amber); animation: livepulse 1.2s infinite; }
-.auto-status-dot.trading  { background: var(--green); animation: livepulse 0.6s infinite; }
-.auto-status-dot.paused   { background: var(--accent2); }
-.auto-status-dot.stopped  { background: var(--red); }
-#auto-status-text { font-family:'JetBrains Mono',monospace; font-size:0.72rem; color:var(--text2); flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-/* session stats strip */
-.auto-stats-strip {
-  display: grid; grid-template-columns: repeat(3,1fr); gap: 6px; margin-bottom: 12px;
-}
-.auto-stat {
-  background: var(--bg2); border: 1px solid var(--border); border-radius: 7px;
-  padding: 7px 8px; text-align: center;
-}
-.auto-stat-label { font-size: 0.6rem; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px; font-family:'JetBrains Mono',monospace; }
-.auto-stat-value { font-family:'JetBrains Mono',monospace; font-size: 0.85rem; font-weight: 700; color: var(--text); }
-.auto-stat-value.green { color: var(--green); }
-.auto-stat-value.red   { color: var(--red); }
-/* control buttons */
-.auto-ctrl-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 7px; margin-bottom: 12px; }
-.auto-btn {
-  display: flex; align-items: center; justify-content: center; gap: 5px;
-  padding: 9px 6px; border-radius: 8px; font-size: 0.75rem; font-weight: 700;
-  cursor: pointer; border: 1px solid var(--border); background: var(--bg2);
-  color: var(--text2); font-family: 'Inter', sans-serif; letter-spacing: 0.2px;
-  transition: all var(--tr);
-}
-.auto-btn:disabled { opacity: 0.35; cursor: not-allowed; filter: none !important; transform: none !important; }
-.auto-btn.start { background: linear-gradient(135deg,#059669,var(--green)); color:#fff; border-color:transparent; box-shadow:0 3px 10px rgba(16,185,129,0.3); }
-.auto-btn.start:hover:not(:disabled) { filter:brightness(1.08); transform:translateY(-1px); }
-.auto-btn.pause { background: linear-gradient(135deg,#d97706,var(--amber)); color:#fff; border-color:transparent; box-shadow:0 3px 10px rgba(245,158,11,0.3); }
-.auto-btn.pause:hover:not(:disabled) { filter:brightness(1.08); transform:translateY(-1px); }
-.auto-btn.stop  { background: linear-gradient(135deg,#dc2626,var(--red)); color:#fff; border-color:transparent; box-shadow:0 3px 10px rgba(239,68,68,0.3); }
-.auto-btn.stop:hover:not(:disabled)  { filter:brightness(1.08); transform:translateY(-1px); }
-/* log */
-.auto-log {
-  max-height: 130px; overflow-y: auto; border-radius: 7px;
-  border: 1px solid var(--border); background: var(--bg2);
-  padding: 6px 8px; font-family: 'JetBrains Mono', monospace; font-size: 0.68rem;
-}
-.auto-log-entry { padding: 2px 0; border-bottom: 1px solid rgba(255,255,255,0.03); color: var(--text2); line-height:1.4; }
-.auto-log-entry.win  { color: var(--green); }
-.auto-log-entry.loss { color: var(--red); }
-.auto-log-entry.info { color: var(--accent2); }
-.auto-log-entry.warn { color: var(--amber); }
-/* symbol pattern badge */
-.sym-pattern-badge {
-  font-size: 0.58rem; font-family:'JetBrains Mono',monospace;
-  padding: 1px 4px; border-radius: 3px; margin-left: 3px;
-  background: rgba(99,102,241,0.12); color: var(--text3);
-  border: 1px solid rgba(99,102,241,0.15);
-}
-.sym-pattern-badge.match {
-  background: rgba(16,185,129,0.15); color: var(--green);
-  border-color: rgba(16,185,129,0.35); animation: livepulse 0.8s infinite;
-}
-
-/* ── RESPONSIVE ── */
-@media (max-width:1100px) {
-  :root { --panel-w: 0px; }
-  #right-panel { display: none; }
-  #app { grid-template-columns: var(--sidebar-w) 1fr; }
-}
-@media (max-width:768px) {
-  #app { grid-template-columns: 1fr; }
-  #sidebar { display: none; }
-  .stats-row { grid-template-columns: repeat(2,1fr); }
-}
-</style>
+        /* ── Accent line on panel header left ── */
+        .panel-header::before {
+            content: '';
+            display: inline-block;
+            width: 3px; height: 14px;
+            background: var(--accent);
+            border-radius: 2px;
+            margin-right: 10px;
+            flex-shrink: 0;
+        }
+        .panel-title { flex: 1; }
+        .auth-hint {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-family: var(--mono);
+            line-height: 1.6;
+            margin-top: 10px;
+            text-align: center;
+        }
+    </style>
 </head>
 <body>
+<div class="wrapper">
 
-<!-- TOPBAR -->
-<div id="topbar">
-  <div class="logo">
-    <div class="logo-icon">D</div>
-    <div class="logo-text">DERIV<span>.</span>DIGITS</div>
-  </div>
-  <div class="topbar-right" id="topbar-right">
-    <span id="theme-toggle" class="icon-btn" title="Toggle theme" onclick="toggleTheme()">☀️</span>
-  </div>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-brand">
+            <span class="brand-eyebrow">Deriv Automated Trading</span>
+            <h1 class="brand-title">1HZ10V <span>Dual</span> Bot</h1>
+            <span class="brand-sub">OVER 2 &amp; UNDER 7 simultaneously · 7-tick cycle</span>
+        </div>
+        <div class="header-controls">
+            <div id="connectionStatus" class="status-badge">
+                <div class="status-dot disconnected" id="connDot"></div>
+                <span id="connLabel">Disconnected</span>
+            </div>
+            <div id="botStatus" class="status-badge">
+                <div class="status-dot idle" id="botDot"></div>
+                <span id="botLabel">Idle</span>
+            </div>
+            <span class="theme-toggle-label">☀</span>
+            <button class="theme-toggle" id="themeToggle" title="Toggle light/dark mode" aria-label="Toggle theme"></button>
+            <span class="theme-toggle-label">🌙</span>
+        </div>
+    </header>
+
+    <!-- Main -->
+    <div class="main-grid">
+
+        <!-- LEFT: Config + buttons -->
+        <div class="left-col">
+            <div class="panel">
+                <div class="panel-header">
+                    <span class="panel-title"><i class="fas fa-sliders-h"></i>Configuration</span>
+                </div>
+                <div class="panel-body">
+
+                    <!-- OAuth login block (shown when logged out) -->
+                    <div id="authBlock">
+                        <div class="field">
+                            <label class="field-label">Deriv Account</label>
+                            <button id="loginBtn" class="btn btn-connect btn-full" style="width:100%;justify-content:center;">
+                                <i class="fas fa-sign-in-alt"></i> Login with Deriv
+                            </button>
+                        </div>
+                        <p class="auth-hint">You will be redirected to Deriv to authorise this app securely via OAuth 2.0.</p>
+                    </div>
+
+                    <!-- Account selector (shown after login) -->
+                    <div id="accountBlock" style="display:none;">
+                        <div class="field">
+                            <label class="field-label">Trading Account</label>
+                            <select id="accountSelect" style="width:100%;background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;font-family:var(--mono);font-size:13px;color:var(--text-primary);outline:none;cursor:pointer;">
+                                <option value="">Loading accounts…</option>
+                            </select>
+                        </div>
+                        <button id="logoutBtn" class="btn btn-ghost" style="width:100%;margin-bottom:4px;">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </button>
+                    </div>
+
+                    <div class="divider"></div>
+
+                    <div class="field field-row">
+                        <div>
+                            <label class="field-label">Initial Stake ($)</label>
+                            <input type="number" id="initialStake" value="0.35" step="0.01">
+                        </div>
+                        <div>
+                            <label class="field-label">Martingale</label>
+                            <input type="number" id="martingale" value="1.3" step="0.1">
+                        </div>
+                    </div>
+
+                    <div class="field field-row">
+                        <div>
+                            <label class="field-label">Take Profit ($)</label>
+                            <input type="number" id="takeProfit" value="15000" step="0.01">
+                        </div>
+                        <div>
+                            <label class="field-label">Stop Loss ($)</label>
+                            <input type="number" id="stopLoss" value="55000" step="0.01">
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label class="field-label">Cycle Ticks</label>
+                        <input type="number" id="cycleTicks" value="7" readonly>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel" style="margin-top:16px;">
+                <div class="panel-header">
+                    <span class="panel-title"><i class="fas fa-gamepad"></i>Controls</span>
+                </div>
+                <div class="panel-body">
+                    <div class="btn-grid">
+                        <button id="connectBtn" class="btn btn-connect btn-full" disabled>
+                            <i class="fas fa-plug"></i> Connect
+                        </button>
+                        <button id="startBtn" disabled class="btn btn-start">
+                            <i class="fas fa-play"></i> Start
+                        </button>
+                        <button id="pauseBtn" disabled class="btn btn-pause">
+                            <i class="fas fa-pause"></i> Pause
+                        </button>
+                        <button id="stopBtn" disabled class="btn btn-stop btn-full">
+                            <i class="fas fa-stop"></i> Stop
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- RIGHT: Stats + log -->
+        <div class="right-col">
+
+            <!-- Stats row -->
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="stat-label">Balance</div>
+                    <div class="stat-value" id="statBalance">$0.00</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">P / L</div>
+                    <div class="stat-value" id="statPL">$0.00</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Streak</div>
+                    <div class="stat-value warn" id="statCumLoss">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Max DD</div>
+                    <div class="stat-value negative" id="statMaxDD">$0.00</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">W / L</div>
+                    <div class="stat-value info" id="statWL">0 / 0</div>
+                </div>
+            </div>
+
+            <!-- Stakes preview + tick -->
+            <div class="panel">
+                <div class="panel-header">
+                    <span class="panel-title"><i class="fas fa-bullseye"></i>Next Cycle</span>
+                    <span class="loss-counts">
+                        Streak <span class="lc-odd" id="oddLossDisplay">0</span>
+                        &nbsp;·&nbsp;
+                        Stake <span class="lc-even" id="evenLossDisplay">$0.35</span>
+                    </span>
+                </div>
+                <div class="panel-body">
+                    <div class="tick-row">
+                        <span class="tick-label">Tick Progress</span>
+                        <span class="tick-counter"><span id="tickCounter">0</span> / 7</span>
+                    </div>
+                    <div class="tick-bar"><div class="tick-bar-fill" id="tickBarFill"></div></div>
+                    <div class="stakes-row">
+                        <div class="stake-card">
+                            <span class="stake-label">DIGITOVER 2</span>
+                            <span class="stake-amount odd" id="previewOdd">$0.00</span>
+                        </div>
+                        <div class="stake-card">
+                            <span class="stake-label">DIGITUNDER 7</span>
+                            <span class="stake-amount even" id="previewEven">$0.00</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Trade log -->
+            <div class="panel">
+                <div class="panel-header">
+                    <span class="panel-title"><i class="fas fa-stream"></i>Trade Activity</span>
+                </div>
+                <div class="log-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>Contract</th>
+                                <th>Stake</th>
+                                <th>Result</th>
+                                <th>Profit</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tradeLog"></tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
 </div>
-
-<!-- LOGIN SCREEN -->
-<div id="login-screen">
-  <div class="auth-card">
-    <div class="auth-logo">D</div>
-    <h1>Digits Trader</h1>
-    <p>Connect your Deriv account to start trading Digits contracts with real-time WebSocket data.</p>
-    <button class="btn btn-primary" onclick="startOAuth('login')">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg>
-      Connect with Deriv
-    </button>
-    <div class="divider">or</div>
-    <button class="btn btn-secondary" onclick="startOAuth('signup')">
-      Create a Deriv Account
-    </button>
-    <p style="margin-top:20px;margin-bottom:0;font-size:0.72rem;">
-      By connecting you agree to Deriv's Terms of Service. Uses OAuth 2.0 + PKCE.
-    </p>
-  </div>
-</div>
-
-<!-- MAIN APP -->
-<div id="app">
-
-  <!-- SIDEBAR -->
-  <div id="sidebar">
-    <div class="sidebar-scroll">
-      <div class="sidebar-section">
-        <div class="section-label">Accounts</div>
-        <div id="accounts-list">
-          <div class="empty" style="padding:16px 4px;font-size:0.8rem;">Loading…</div>
-        </div>
-      </div>
-
-      <div class="sidebar-section">
-        <div class="section-label">Markets</div>
-        <div id="symbols-list">
-          <div class="empty" style="padding:16px 4px;font-size:0.8rem;">Loading…</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- MAIN CONTENT -->
-  <div id="main">
-    <div class="tab-bar">
-      <div class="tab active" onclick="switchTab('trade')">Trade</div>
-      <div class="tab" onclick="switchTab('positions')">Positions</div>
-      <div class="tab" onclick="switchTab('statement')">Statement</div>
-    </div>
-
-    <!-- TRADE TAB -->
-    <div id="tab-trade" class="tab-content active">
-      <div class="stats-row">
-        <div class="stat-card">
-          <div class="stat-label">Balance</div>
-          <div class="stat-value mono" id="stat-balance">—</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Session P&amp;L</div>
-          <div class="stat-value" id="stat-pnl">—</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Win Rate</div>
-          <div class="stat-value" id="stat-winrate">—</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Trades</div>
-          <div class="stat-value mono" id="stat-trades">0</div>
-        </div>
-      </div>
-
-      <div class="tick-display" id="tick-display" style="display:none;">
-        <div class="tick-header">
-          <span class="tick-symbol-badge" id="tick-symbol-name">—</span>
-          <span class="tick-price flat" id="tick-price-display">—</span>
-          <span class="tick-change" id="tick-change-badge" style="display:none;"></span>
-        </div>
-        <div class="tick-tape" id="tick-tape"></div>
-      </div>
-
-      <div id="no-symbol-msg" class="notice info">
-        ← Select a market from the sidebar to view live ticks and start trading.
-      </div>
-    </div>
-
-    <!-- POSITIONS TAB -->
-    <div id="tab-positions" class="tab-content">
-      <div id="portfolio-content">
-        <div class="empty"><div class="empty-icon">📊</div>No open positions yet.</div>
-      </div>
-    </div>
-
-    <!-- STATEMENT TAB -->
-    <div id="tab-statement" class="tab-content">
-      <div id="statement-content">
-        <div class="empty"><div class="empty-icon">📋</div>No closed trades yet.</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- RIGHT PANEL -->
-  <div id="right-panel">
-    <div class="panel-header">
-      <div class="panel-title">⚡ Auto-Trader</div>
-      <div class="ws-status-pill" id="ws-status-pill">
-        <span class="ws-dot disconnected" id="ws-dot"></span>
-        <span id="ws-status-text">Offline</span>
-      </div>
-    </div>
-
-    <div class="panel-scroll">
-
-      <!-- STATUS BAR -->
-      <div class="auto-status-row">
-        <span class="auto-status-dot idle" id="auto-status-dot"></span>
-        <span id="auto-status-text">Idle — configure and press Start</span>
-      </div>
-
-      <!-- SESSION STATS STRIP -->
-      <div class="auto-stats-strip">
-        <div class="auto-stat">
-          <div class="auto-stat-label">Session P&L</div>
-          <div class="auto-stat-value" id="auto-pnl-display">$0.00</div>
-        </div>
-        <div class="auto-stat">
-          <div class="auto-stat-label">Trades</div>
-          <div class="auto-stat-value" id="auto-trades-display">0</div>
-        </div>
-        <div class="auto-stat">
-          <div class="auto-stat-label">Win Rate</div>
-          <div class="auto-stat-value" id="auto-wr-display">—</div>
-        </div>
-      </div>
-
-      <!-- CONTROL BUTTONS -->
-      <div class="auto-ctrl-row">
-        <button class="auto-btn start" id="btn-start" onclick="autoStart()">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
-          Start
-        </button>
-        <button class="auto-btn pause" id="btn-pause" onclick="autoPause()" disabled>
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
-          Pause
-        </button>
-        <button class="auto-btn stop" id="btn-stop" onclick="autoStop()" disabled>
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="4" width="16" height="16"/></svg>
-          Stop
-        </button>
-      </div>
-
-      <!-- CONFIG -->
-      <div class="auto-panel">
-        <div class="auto-section-title">Configuration</div>
-        <div class="params-grid">
-          <div class="form-group" style="margin-bottom:0">
-            <label class="form-label">Initial Stake ($)</label>
-            <input type="number" class="form-input" id="auto-base-stake" value="0.35" min="0.35" step="0.01">
-          </div>
-          <div class="form-group" style="margin-bottom:0">
-            <label class="form-label">Duration (ticks)</label>
-            <input type="number" class="form-input" id="auto-duration" value="1" min="1" max="10" step="1">
-          </div>
-          <div class="form-group" style="margin-bottom:0">
-            <label class="form-label">Take Profit ($)</label>
-            <input type="number" class="form-input" id="auto-take-profit" value="15000" min="0.01" step="0.01">
-          </div>
-          <div class="form-group" style="margin-bottom:0">
-            <label class="form-label">Stop Loss ($)</label>
-            <input type="number" class="form-input" id="auto-stop-loss" value="50000" min="0.01" step="0.01">
-          </div>
-        </div>
-        <div style="margin-top:10px;">
-          <label class="form-label">Martingale Multiplier</label>
-          <input type="number" class="form-input" id="auto-martingale-mult" value="2.2" min="1.01" max="10" step="0.01" placeholder="e.g. 2.2">
-        </div>
-      </div>
-
-      <div class="panel-divider"></div>
-
-      <!-- PATTERNS INFO -->
-      <div style="margin-bottom:12px;">
-        <div class="panel-title" style="margin-bottom:8px;">Active Strategies</div>
-        <div style="display:flex;flex-direction:column;gap:5px;">
-          <div style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:7px;background:var(--bg3);border:1px solid var(--border);">
-            <span style="font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:var(--green);font-weight:700;letter-spacing:0.5px;">OEEEEOOOOE</span>
-            <span style="font-size:0.7rem;color:var(--text2);">→</span>
-            <span style="font-size:0.72rem;font-weight:600;color:var(--text);">DIGIT ODD</span>
-          </div>
-          <div style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:7px;background:var(--bg3);border:1px solid var(--border);">
-            <span style="font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:var(--accent2);font-weight:700;letter-spacing:0.5px;">EOOOOEEEEO</span>
-            <span style="font-size:0.7rem;color:var(--text2);">→</span>
-            <span style="font-size:0.72rem;font-weight:600;color:var(--text);">DIGIT EVEN</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- TRADE LOG -->
-      <div class="panel-title" style="margin-bottom:8px;">Trade Log</div>
-      <div class="auto-log" id="auto-log">
-        <div class="auto-log-entry info">Waiting to start…</div>
-      </div>
-
-    </div>
-  </div>
-
-</div>
-
-<!-- TOAST -->
-<div id="toast"></div>
 
 <script>
-// ═══════════════════════════════════════════════
-// CONFIG
-// ═══════════════════════════════════════════════
-const CONFIG = {
-  CLIENT_ID:    '3386rHtrRkbWFzxo0gwdh',
-  APP_ID:       '3386rHtrRkbWFzxo0gwdh',
-  REDIRECT_URI: 'https://skimotho.github.io/deriv-trader/',
-  AUTH_URL:     'https://auth.deriv.com/oauth2/auth',
-  TOKEN_URL:    'https://auth.deriv.com/oauth2/token',
-  API_BASE:     'https://api.derivws.com',
-  SCOPE:        'trade account_manage',
-  WS_PUBLIC:    'wss://api.derivws.com/trading/v1/options/ws/public',
-};
-
-const ALL_SYMBOLS = [
-  { symbol:'1HZ10V',  display:'Volatility 10 (1s)',  group:'Volatility (1s)' },
-  { symbol:'1HZ25V',  display:'Volatility 25 (1s)',  group:'Volatility (1s)' },
-  { symbol:'1HZ50V',  display:'Volatility 50 (1s)',  group:'Volatility (1s)' },
-  { symbol:'1HZ75V',  display:'Volatility 75 (1s)',  group:'Volatility (1s)' },
-  { symbol:'1HZ100V', display:'Volatility 100 (1s)', group:'Volatility (1s)' },
-  { symbol:'JD10',    display:'Jump 10',              group:'Jump Indices' },
-  { symbol:'JD25',    display:'Jump 25',              group:'Jump Indices' },
-  { symbol:'JD50',    display:'Jump 50',              group:'Jump Indices' },
-  { symbol:'JD75',    display:'Jump 75',              group:'Jump Indices' },
-  { symbol:'JD100',   display:'Jump 100',             group:'Jump Indices' },
-];
-
-const SYMBOL_DECIMALS = {
-  '1HZ10V':2,'1HZ25V':2,'1HZ50V':2,'1HZ75V':2,'1HZ100V':2,
-  'JD10':2,'JD25':2,'JD50':2,'JD75':2,'JD100':2,
-};
-
-const AUTO_PATTERNS = {
-  DIGITODD:  'OEEEEOOOOE',   // OEEEEOOOOE → DIGITODD
-  DIGITEVEN: 'EOOOOEEEEO',   // EOOOOEEEEO → DIGITEVEN
-};
-
-// ═══════════════════════════════════════════════
-// STATE
-// ═══════════════════════════════════════════════
-let state = {
-  accessToken: null,
-  accounts: [],
-  activeAccount: null,
-  ws: null,
-  wsAuthenticated: false,
-  wsIsPublic: false,
-  currentSymbol: null,
-  ticks: [],
-  lastDigits: [],
-  positions: [],
-  statement: [],
-  sessionStats: { pnl: 0, wins: 0, trades: 0 },
-  theme: 'dark',
-  // ── AUTO-TRADER ──
-  auto: {
-    status: 'idle',        // idle | watching | trading | paused | stopped
-    running: false,        // contract currently open
-    currentStake: 0.35,    // current (possibly martingaled) stake
-    sessionPnl: 0,
-    sessionTrades: 0,
-    sessionWins: 0,
-    patternBuffers: {},    // symbol → ['E','O',…] last 10
-    activeSymbol: null,
-    activeContractId: null,
-    pendingReqId: null,    // integer req_id for pending auto proposal
-    reqCounter: 1,         // monotonic integer counter for req_id
-  },
-};
-
-// ═══════════════════════════════════════════════
-// THEME
-// ═══════════════════════════════════════════════
-function toggleTheme() {
-  state.theme = state.theme === 'dark' ? 'light' : 'dark';
-  document.body.classList.toggle('light', state.theme === 'light');
-  document.getElementById('theme-toggle').textContent = state.theme === 'dark' ? '☀️' : '🌙';
-  localStorage.setItem('deriv_theme', state.theme);
-}
-(function() {
-  const saved = localStorage.getItem('deriv_theme');
-  if (saved === 'light') { document.body.classList.add('light'); state.theme = 'light'; document.getElementById('theme-toggle').textContent = '🌙'; }
-})();
-
-// ═══════════════════════════════════════════════
-// OAUTH 2.0 + PKCE
-// ═══════════════════════════════════════════════
-async function generatePKCE() {
-  const array = crypto.getRandomValues(new Uint8Array(64));
-  const codeVerifier = Array.from(array)
-    .map(v => 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~'[v % 66])
-    .join('');
-  const hash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(codeVerifier));
-  const codeChallenge = btoa(String.fromCharCode(...new Uint8Array(hash)))
-    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-  return { codeVerifier, codeChallenge };
-}
-
-async function startOAuth(mode) {
-  const { codeVerifier, codeChallenge } = await generatePKCE();
-  const oauthState = crypto.getRandomValues(new Uint8Array(16))
-    .reduce((s, b) => s + b.toString(16).padStart(2, '0'), '');
-  sessionStorage.setItem('pkce_code_verifier', codeVerifier);
-  sessionStorage.setItem('oauth_state', oauthState);
-  const params = new URLSearchParams({
-    response_type: 'code', client_id: CONFIG.CLIENT_ID,
-    redirect_uri: CONFIG.REDIRECT_URI, scope: CONFIG.SCOPE,
-    state: oauthState, code_challenge: codeChallenge, code_challenge_method: 'S256',
-  });
-  if (mode === 'signup') params.set('prompt', 'registration');
-  window.location.href = `${CONFIG.AUTH_URL}?${params}`;
-}
-
-async function handleCallback() {
-  const params = new URLSearchParams(window.location.search);
-  const code = params.get('code');
-  const returnedState = params.get('state');
-  const error = params.get('error');
-  if (error) { showToast(`Auth error: ${params.get('error_description') || error}`, 'error'); return; }
-  if (!code) return;
-  const storedState = sessionStorage.getItem('oauth_state');
-  const codeVerifier = sessionStorage.getItem('pkce_code_verifier');
-  if (returnedState !== storedState) { showToast('State mismatch — possible CSRF. Login aborted.', 'error'); return; }
-  window.history.replaceState({}, document.title, window.location.pathname);
-  showToast('Authenticating…', 'info');
-  try {
-    const res = await fetch(CONFIG.TOKEN_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
-        grant_type: 'authorization_code', client_id: CONFIG.CLIENT_ID,
-        code, code_verifier: codeVerifier, redirect_uri: CONFIG.REDIRECT_URI,
-      }),
+    // ── Theme toggle ──
+    const themeToggle = document.getElementById('themeToggle');
+    const html = document.documentElement;
+    const savedTheme = localStorage.getItem('bot_theme') || 'dark';
+    html.setAttribute('data-theme', savedTheme);
+    themeToggle.addEventListener('click', () => {
+        const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        html.setAttribute('data-theme', next);
+        localStorage.setItem('bot_theme', next);
     });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error_description || data.error || 'Token exchange failed');
-    sessionStorage.removeItem('pkce_code_verifier');
-    sessionStorage.removeItem('oauth_state');
-    state.accessToken = data.access_token;
-    sessionStorage.setItem('deriv_access_token', data.access_token);
-    sessionStorage.setItem('deriv_token_expiry', Date.now() + data.expires_in * 1000);
-    await initApp();
-  } catch(e) {
-    showToast(`Token error: ${e.message}`, 'error');
-    console.error(e);
-  }
-}
 
-// ═══════════════════════════════════════════════
-// APP INIT
-// ═══════════════════════════════════════════════
-async function initApp() {
-  document.getElementById('login-screen').style.display = 'none';
-  document.getElementById('app').style.display = 'grid';
-  document.getElementById('topbar-right').innerHTML = `
-    <span id="account-env-badge" class="badge demo">DEMO</span>
-    <span class="mono" style="font-size:0.78rem;color:var(--text2);" id="topbar-balance">—</span>
-    <span class="icon-btn" title="Toggle theme" onclick="toggleTheme()" id="theme-toggle">${state.theme==='dark'?'☀️':'🌙'}</span>
-    <button class="btn btn-secondary btn-sm" onclick="logout()">Logout</button>
-  `;
-  await loadAccounts();
-  loadSymbols();
-}
+    // ── OAuth 2.0 + PKCE Configuration ──
+    const CLIENT_ID    = '3386rHtrRkbWFzxo0gwdh';
+    const REDIRECT_URI = 'https://skimotho.github.io/overunder/';
+    const AUTH_URL     = 'https://auth.deriv.com/oauth2/auth';
+    const TOKEN_URL    = 'https://auth.deriv.com/oauth2/token';
+    const API_BASE     = 'https://api.derivws.com';
+    const SCOPE        = 'trade account_manage';
 
-// ═══════════════════════════════════════════════
-// ACCOUNTS
-// ═══════════════════════════════════════════════
-async function loadAccounts() {
-  try {
-    const res = await apiGet('/trading/v1/options/accounts');
-    const accounts = res.data || res.accounts || res || [];
-    state.accounts = Array.isArray(accounts) ? accounts : [accounts];
-    renderAccounts();
-    if (state.accounts.length > 0) selectAccount(state.accounts[0]);
-  } catch(e) {
-    console.error('Accounts error:', e);
-    showToast('Could not load accounts: ' + e.message, 'error');
-    document.getElementById('accounts-list').innerHTML = `<div class="notice" style="font-size:0.78rem;">${e.message}</div>`;
-  }
-}
+    const RECONNECT_INTERVAL      = 3000;
+    const MAX_RECONNECT_ATTEMPTS  = 10;
+    const CYCLE_TICKS             = 7;
 
-function renderAccounts() {
-  const el = document.getElementById('accounts-list');
-  if (!state.accounts.length) { el.innerHTML = '<div class="empty" style="padding:12px 4px;font-size:0.8rem;">No accounts found.</div>'; return; }
-  el.innerHTML = state.accounts.map((ac, i) => {
-    const isDemo = ac.account_type === 'demo' || (ac.id||'').toLowerCase().includes('demo') || ac.is_virtual;
-    return `
-    <div class="account-card ${i===0?'active':''}" onclick="selectAccount(${JSON.stringify(ac).replace(/"/g,'&quot;')}, this)">
-      <div class="ac-id">${ac.id || ac.account_id || '—'}</div>
-      <div class="ac-bal">${ac.currency||'USD'} ${parseFloat(ac.balance||0).toFixed(2)}</div>
-      <div class="ac-type"><span class="badge ${isDemo?'demo':'live'}">${isDemo?'DEMO':'LIVE'}</span></div>
-    </div>`;
-  }).join('');
-}
+    // ── Runtime state ──
+    let ws                = null;
+    let isRunning         = false;
+    let isPaused          = false;
+    let tickCount         = 0;
+    let initialBalance    = 0;
+    let currentBalance    = 0;
+    let botTotalProfit    = 0;
+    let botWins           = 0;
+    let botLosses         = 0;
+    let botMaxDrawdown    = 0;
+    let activeContracts   = new Map();
+    let reconnectAttempts = 0;
+    let reconnectTimer    = null;
+    let tradingInProgress = false;
+    let expectedContractTypes = new Set();
 
-function selectAccount(ac, el) {
-  if (typeof ac === 'string') ac = JSON.parse(ac);
-  state.activeAccount = ac;
-  document.querySelectorAll('.account-card').forEach(c => c.classList.remove('active'));
-  if (el) el.classList.add('active');
-  const isDemo = ac.account_type === 'demo' || (ac.id||'').toLowerCase().includes('demo') || ac.is_virtual;
-  const badge = document.getElementById('account-env-badge');
-  if (badge) { badge.textContent = isDemo ? 'DEMO' : 'LIVE'; badge.className = `badge ${isDemo?'demo':'live'}`; }
-  document.getElementById('stat-balance').textContent = `${ac.currency||'USD'} ${parseFloat(ac.balance||0).toFixed(2)}`;
-  const balEl = document.getElementById('topbar-balance');
-  if (balEl) balEl.textContent = `${ac.currency||'USD'} ${parseFloat(ac.balance||0).toFixed(2)}`;
-  connectWebSocket(ac);
-}
+    // ── Martingale state ──
+    let currentStake     = 0;
+    let peakProfit       = 0;
+    let lossStreakActive = false;
+    let pendingCycleResults = { overProfit: null, underProfit: null, overStake: null, underStake: null };
 
-// ═══════════════════════════════════════════════
-// REST API HELPERS
-// ═══════════════════════════════════════════════
-async function apiGet(path) {
-  const res = await fetch(`${CONFIG.API_BASE}${path}`, {
-    headers: { 'Authorization': `Bearer ${state.accessToken}`, 'Deriv-App-ID': CONFIG.APP_ID }
-  });
-  if (!res.ok) { const err = await res.json().catch(()=>({message:'Unknown error'})); throw new Error(err.errors?.[0]?.message || err.message || `HTTP ${res.status}`); }
-  return res.json();
-}
+    // ── OAuth token storage (sessionStorage only — never persisted) ──
+    let accessToken  = sessionStorage.getItem('deriv_access_token')  || null;
+    let selectedAccountId = sessionStorage.getItem('deriv_account_id') || null;
 
-async function apiPost(path, body) {
-  const res = await fetch(`${CONFIG.API_BASE}${path}`, {
-    method: 'POST',
-    headers: { 'Authorization': `Bearer ${state.accessToken}`, 'Deriv-App-ID': CONFIG.APP_ID, 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
-  if (!res.ok) { const err = await res.json().catch(()=>({message:'Unknown error'})); throw new Error(err.errors?.[0]?.message || err.message || `HTTP ${res.status}`); }
-  return res.json();
-}
+    // ── DOM elements ──
+    const elements = {
+        loginBtn:       document.getElementById('loginBtn'),
+        logoutBtn:      document.getElementById('logoutBtn'),
+        authBlock:      document.getElementById('authBlock'),
+        accountBlock:   document.getElementById('accountBlock'),
+        accountSelect:  document.getElementById('accountSelect'),
+        connectBtn:     document.getElementById('connectBtn'),
+        startBtn:       document.getElementById('startBtn'),
+        pauseBtn:       document.getElementById('pauseBtn'),
+        stopBtn:        document.getElementById('stopBtn'),
+        initialStake:   document.getElementById('initialStake'),
+        martingale:     document.getElementById('martingale'),
+        takeProfit:     document.getElementById('takeProfit'),
+        stopLoss:       document.getElementById('stopLoss'),
+        tradeLog:       document.getElementById('tradeLog'),
+        statBalance:    document.getElementById('statBalance'),
+        statPL:         document.getElementById('statPL'),
+        statCumLoss:    document.getElementById('statCumLoss'),
+        statMaxDD:      document.getElementById('statMaxDD'),
+        statWL:         document.getElementById('statWL'),
+        tickCounter:    document.getElementById('tickCounter'),
+        tickBarFill:    document.getElementById('tickBarFill'),
+        previewOdd:     document.getElementById('previewOdd'),
+        previewEven:    document.getElementById('previewEven'),
+        oddLossDisplay: document.getElementById('oddLossDisplay'),
+        evenLossDisplay:document.getElementById('evenLossDisplay'),
+        connDot:        document.getElementById('connDot'),
+        connLabel:      document.getElementById('connLabel'),
+        botDot:         document.getElementById('botDot'),
+        botLabel:       document.getElementById('botLabel'),
+    };
 
-// ═══════════════════════════════════════════════
-// WEBSOCKET
-// ═══════════════════════════════════════════════
-async function connectWebSocket(account) {
-  if (state.ws) { state.ws.close(); state.ws = null; }
-  setWsStatus('connecting');
-  try {
-    const accountId = account.id || account.account_id;
-    if (!accountId) throw new Error('No account ID');
-    const otpRes = await apiPost(`/trading/v1/options/accounts/${accountId}/otp`, {});
-    const wsUrl = otpRes?.data?.url || otpRes?.url;
-    if (!wsUrl) throw new Error('No WebSocket URL in OTP response');
-    state.ws = new WebSocket(wsUrl);
-    state.wsIsPublic = false;
-  } catch(e) {
-    console.warn('Authenticated WS failed, using public WS:', e.message);
-    state.ws = new WebSocket(CONFIG.WS_PUBLIC);
-    state.wsIsPublic = true;
-  }
+    const fmt = (val) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val);
+    function r2(v) { return parseFloat(v.toFixed(2)); }
 
-  state.ws.onopen = () => {
-    setWsStatus('connected');
-    // Only mark authenticated if we're NOT on the public fallback WebSocket
-    state.wsAuthenticated = !state.wsIsPublic;
-    showToast(state.wsIsPublic ? 'Connected (public — trading disabled)' : 'Connected', state.wsIsPublic ? 'info' : 'success');
-    wsSend({ balance: 1, subscribe: 1 });
-    // Subscribe all symbols for tick monitoring
-    ALL_SYMBOLS.forEach(s => wsSend({ ticks: s.symbol, subscribe: 1 }));
-    if (state.currentSymbol) subscribeToTicks(state.currentSymbol);
-  };
-  state.ws.onmessage = (event) => {
-    try { handleWsMessage(JSON.parse(event.data)); } catch(e) { console.warn('WS parse error', e); }
-  };
-  state.ws.onerror = () => setWsStatus('disconnected');
-  state.ws.onclose = () => {
-    setWsStatus('disconnected');
-    state.wsAuthenticated = false;
-    setTimeout(() => { if (state.activeAccount) connectWebSocket(state.activeAccount); }, 5000);
-  };
-}
-
-function setWsStatus(s) {
-  const dot = document.getElementById('ws-dot');
-  const txt = document.getElementById('ws-status-text');
-  if (!dot) return;
-  dot.className = `ws-dot ${s}`;
-  txt.textContent = { connected:'Connected', disconnected:'Offline', connecting:'Connecting…' }[s];
-}
-
-function wsSend(obj) {
-  if (state.ws && state.ws.readyState === WebSocket.OPEN) state.ws.send(JSON.stringify(obj));
-}
-
-// ═══════════════════════════════════════════════
-// WS MESSAGE ROUTER
-// ═══════════════════════════════════════════════
-function handleWsMessage(msg) {
-  const type = msg.msg_type || msg.type;
-
-  if (msg.error) {
-    // Ignore req_id validation errors on auto proposals — handle gracefully
-    if (type === 'proposal' && state.auto.pendingReqId !== null) {
-      autoLog('Proposal error: ' + (msg.error.message || 'unknown'), 'warn');
-      state.auto.running = false;
-      state.auto.pendingReqId = null;
-      if (state.auto.status === 'trading') setAutoStatus('watching');
-    } else if (type === 'buy' && state.auto.running) {
-      handleAutoBuyResponse(msg);
-    } else {
-      console.warn('WS error:', type, msg.error);
-      if (type !== 'ticks') showToast(msg.error.message || 'API error', 'error');
+    // ════════════════════════════════════════════════════
+    // PKCE helpers
+    // ════════════════════════════════════════════════════
+    function generateCodeVerifier() {
+        const array = new Uint8Array(64);
+        crypto.getRandomValues(array);
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
+        return Array.from(array).map(v => chars[v % chars.length]).join('');
     }
-    return;
-  }
 
-  if (type === 'tick')                    handleTick(msg.tick || msg);
-  else if (type === 'proposal')           handleProposalMsg(msg);
-  else if (type === 'buy')                handleBuyMsg(msg);
-  else if (type === 'balance')            handleBalance(msg.balance || msg);
-  else if (type === 'portfolio')          handlePortfolio(msg.portfolio || msg);
-  else if (type === 'statement')          handleStatement(msg.statement || msg);
-  else if (type === 'proposal_open_contract') handlePOC(msg.proposal_open_contract || msg);
-}
-
-function handleProposalMsg(msg) {
-  const proposal = msg.proposal || msg;
-  const incomingReqId = msg.req_id !== undefined ? msg.req_id : null;
-  // Route to auto if this req_id matches our pending auto proposal
-  if (state.auto.pendingReqId !== null && incomingReqId === state.auto.pendingReqId) {
-    handleAutoProposal(proposal);
-  }
-  // (no manual proposal routing needed — manual trading removed)
-}
-
-function handleBuyMsg(msg) {
-  const buy = msg.buy || msg;
-  if (state.auto.running) {
-    handleAutoBuyResponse(buy);
-  }
-}
-
-// ═══════════════════════════════════════════════
-// SYMBOLS / TICKS
-// ═══════════════════════════════════════════════
-function getDecimals(symbol) { return SYMBOL_DECIMALS[symbol] ?? 2; }
-
-function loadSymbols() {
-  const groups = {};
-  ALL_SYMBOLS.forEach(s => {
-    if (!groups[s.group]) groups[s.group] = [];
-    groups[s.group].push(s);
-  });
-  const el = document.getElementById('symbols-list');
-  el.innerHTML = Object.entries(groups).map(([label, items]) => `
-    <div class="market-group">
-      <div class="market-group-label">${label}</div>
-      ${items.map(s => `
-        <div class="symbol-item" id="sym-${s.symbol}" onclick="selectSymbol('${s.symbol}','${s.display}')">
-          <span class="sym-name">${s.display}</span>
-          <span class="sym-tick" id="tick-${s.symbol}">—</span>
-        </div>
-      `).join('')}
-    </div>
-  `).join('');
-}
-
-function selectSymbol(symbol, display) {
-  document.querySelectorAll('.symbol-item').forEach(el => el.classList.remove('active'));
-  const el = document.getElementById(`sym-${symbol}`);
-  if (el) el.classList.add('active');
-  state.currentSymbol = symbol;
-  state.ticks = [];
-  state.lastDigits = [];
-  document.getElementById('tick-symbol-name').textContent = display;
-  document.getElementById('tick-price-display').textContent = '—';
-  document.getElementById('tick-price-display').className = 'tick-price flat';
-  document.getElementById('tick-display').style.display = 'block';
-  document.getElementById('no-symbol-msg').style.display = 'none';
-  document.getElementById('tick-tape').innerHTML = '';
-  document.getElementById('last-digits-history').textContent = 'Waiting for ticks…';
-  subscribeToTicks(symbol);
-}
-
-function subscribeToTicks(symbol) { wsSend({ ticks: symbol, subscribe: 1 }); }
-
-function handleTick(tick) {
-  const price  = parseFloat(tick.quote || tick.price || 0);
-  const symbol = tick.symbol;
-  if (!price || !symbol) return;
-
-  const decimals   = getDecimals(symbol);
-  const lastDigit  = Math.round(Math.abs(price) * Math.pow(10, decimals)) % 10;
-
-  // Update sidebar tick value
-  const tickEl = document.getElementById(`tick-${symbol}`);
-  if (tickEl) {
-    const prev = parseFloat(tickEl.dataset.prev || 0);
-    const dir  = price > prev ? 'up' : price < prev ? 'down' : 'flat';
-    tickEl.textContent = price.toFixed(decimals);
-    tickEl.className = `sym-tick sym-${dir}`;
-    tickEl.dataset.prev = price;
-  }
-
-  // Update main tick display for selected symbol
-  if (symbol === state.currentSymbol) {
-    const prev = state.ticks[state.ticks.length - 1];
-    const dir  = prev ? (price > prev ? 'up' : price < prev ? 'down' : 'flat') : 'flat';
-    state.ticks.push(price);
-    if (state.ticks.length > 100) state.ticks.shift();
-    state.lastDigits.push(lastDigit);
-    if (state.lastDigits.length > 50) state.lastDigits.shift();
-
-    const priceEl = document.getElementById('tick-price-display');
-    priceEl.textContent = price.toFixed(decimals);
-    priceEl.className = `tick-price ${dir}`;
-    const changeBadge = document.getElementById('tick-change-badge');
-    if (prev) {
-      const chg = ((price - prev) / prev * 100).toFixed(3);
-      changeBadge.textContent = `${dir === 'up' ? '+' : ''}${chg}%`;
-      changeBadge.className = `tick-change ${dir}`;
-      changeBadge.style.display = 'inline-block';
+    async function generateCodeChallenge(verifier) {
+        const hash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier));
+        return btoa(String.fromCharCode(...new Uint8Array(hash)))
+            .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
     }
-    updateTickTape(lastDigit);
-    updateDigitsHistory();
-  }
 
-  // Feed auto-trader for ALL symbols
-  autoProcessTick(symbol, price, lastDigit);
-}
-
-function updateTickTape(digit) {
-  const tape = document.getElementById('tick-tape');
-  const dot = document.createElement('div');
-  dot.className = `tick-dot ${digit % 2 === 0 ? 'even' : 'odd'}`;
-  dot.textContent = digit;
-  tape.appendChild(dot);
-  while (tape.children.length > 20) tape.removeChild(tape.firstChild);
-}
-
-function updateDigitsHistory() {
-  const el = document.getElementById('last-digits-history');
-  if (!el) return;
-  const counts = Array(10).fill(0);
-  state.lastDigits.forEach(d => counts[d]++);
-  const total = state.lastDigits.length || 1;
-  const max = Math.max(...counts, 1);
-  el.innerHTML = counts.map((c, d) => {
-    const pct = (c / total * 100).toFixed(0);
-    const hot = c === max && total > 5;
-    return `<div class="digit-stat-row">
-      <span class="digit-stat-label" style="${hot ? 'color:var(--accent2);' : ''}">${d}</span>
-      <div class="digit-stat-bar"><div class="digit-stat-fill" style="width:${pct}%;${hot?'background:var(--accent2);':''}"></div></div>
-      <span class="digit-stat-pct">${pct}%</span>
-    </div>`;
-  }).join('');
-}
-
-// ═══════════════════════════════════════════════
-// AUTO-TRADER CONTROLS
-// ═══════════════════════════════════════════════
-function autoStart() {
-  if (!state.wsAuthenticated || state.wsIsPublic) {
-    showToast('An authenticated connection is required to trade.', 'error');
-    return;
-  }
-  // Reset session stats and stake on fresh start
-  state.auto.sessionPnl    = 0;
-  state.auto.sessionTrades = 0;
-  state.auto.sessionWins   = 0;
-  state.auto.currentStake  = parseFloat(document.getElementById('auto-base-stake').value) || 0.35;
-  state.auto.patternBuffers = {};
-  state.auto.running       = false;
-  state.auto.activeContractId = null;
-  state.auto.pendingReqId  = null;
-  updateAutoSessionDisplay();
-  setAutoStatus('watching');
-  // Lock config inputs while running
-  setConfigLocked(true);
-  autoLog('Auto-trader started. Base stake: $' + state.auto.currentStake.toFixed(2)
-    + ' | TP: $' + document.getElementById('auto-take-profit').value
-    + ' | SL: $' + document.getElementById('auto-stop-loss').value, 'info');
-}
-
-function autoPause() {
-  if (state.auto.status === 'paused') {
-    // Resume
-    setAutoStatus('watching');
-    autoLog('Resumed — watching for patterns…', 'info');
-    document.getElementById('btn-pause').innerHTML =
-      '<svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg> Pause';
-  } else {
-    setAutoStatus('paused');
-    autoLog('Paused — will not fire new trades. Current contract continues.', 'warn');
-    document.getElementById('btn-pause').innerHTML =
-      '<svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg> Resume';
-  }
-}
-
-function autoStop() {
-  setAutoStatus('stopped');
-  setConfigLocked(false);
-  state.auto.running = false;
-  state.auto.pendingReqId = null;
-  const pnl = state.auto.sessionPnl;
-  autoLog('Stopped manually. Session P&L: ' + (pnl >= 0 ? '+' : '') + '$' + pnl.toFixed(2)
-    + ' | Trades: ' + state.auto.sessionTrades, pnl >= 0 ? 'win' : 'loss');
-  // Reset pause button label
-  document.getElementById('btn-pause').innerHTML =
-    '<svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg> Pause';
-}
-
-function setAutoStatus(status) {
-  state.auto.status = status;
-  const dot = document.getElementById('auto-status-dot');
-  const txt = document.getElementById('auto-status-text');
-  const btnStart = document.getElementById('btn-start');
-  const btnPause = document.getElementById('btn-pause');
-  const btnStop  = document.getElementById('btn-stop');
-  if (!dot) return;
-
-  const labels = {
-    idle:     'Idle — configure and press Start',
-    watching: 'Watching all symbols for pattern…',
-    trading:  'Contract open — awaiting settlement…',
-    paused:   'Paused — press Resume to continue',
-    stopped:  'Stopped',
-  };
-  dot.className = 'auto-status-dot ' + status;
-  txt.textContent = labels[status] || status;
-
-  const isActive = ['watching','trading','paused'].includes(status);
-  btnStart.disabled = isActive;
-  btnPause.disabled = !isActive;
-  btnStop.disabled  = !isActive;
-}
-
-function setConfigLocked(locked) {
-  ['auto-base-stake','auto-duration','auto-take-profit','auto-stop-loss','auto-martingale-mult']
-    .forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.disabled = locked;
-    });
-}
-
-function autoLog(msg, type = 'info') {
-  const log = document.getElementById('auto-log');
-  if (!log) return;
-  const entry = document.createElement('div');
-  const ts = new Date().toLocaleTimeString('en-GB', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
-  entry.className = 'auto-log-entry ' + type;
-  entry.textContent = '[' + ts + '] ' + msg;
-  log.insertBefore(entry, log.firstChild);
-  while (log.children.length > 100) log.removeChild(log.lastChild);
-}
-
-function updateAutoSessionDisplay() {
-  const pnl = state.auto.sessionPnl;
-  const trades = state.auto.sessionTrades;
-  const wins = state.auto.sessionWins;
-  const pnlEl = document.getElementById('auto-pnl-display');
-  const trEl  = document.getElementById('auto-trades-display');
-  const wrEl  = document.getElementById('auto-wr-display');
-  if (pnlEl) {
-    pnlEl.textContent = (pnl >= 0 ? '+' : '') + '$' + pnl.toFixed(2);
-    pnlEl.className = 'auto-stat-value ' + (pnl > 0 ? 'green' : pnl < 0 ? 'red' : '');
-  }
-  if (trEl) trEl.textContent = trades;
-  if (wrEl) wrEl.textContent = trades > 0 ? (wins / trades * 100).toFixed(0) + '%' : '—';
-
-  // Also update main stats row
-  document.getElementById('stat-trades').textContent = state.sessionStats.trades;
-  const spnl = state.sessionStats.pnl;
-  const pnlMain = document.getElementById('stat-pnl');
-  pnlMain.textContent = (spnl >= 0 ? '+' : '') + 'USD ' + spnl.toFixed(2);
-  pnlMain.className = 'stat-value ' + (spnl >= 0 ? 'green' : 'red');
-  const wr = state.sessionStats.trades ? (state.sessionStats.wins / state.sessionStats.trades * 100).toFixed(0) : 0;
-  const wrMain = document.getElementById('stat-winrate');
-  wrMain.textContent = wr + '%';
-  wrMain.className = 'stat-value ' + (wr >= 50 ? 'green' : 'red');
-}
-
-// ═══════════════════════════════════════════════
-// AUTO-TRADER CORE
-// ═══════════════════════════════════════════════
-function autoProcessTick(symbol, price, lastDigit) {
-  if (state.auto.status !== 'watching') return;  // idle / paused / stopped / trading → skip
-
-  const eo = lastDigit % 2 === 0 ? 'E' : 'O';
-  if (!state.auto.patternBuffers[symbol]) state.auto.patternBuffers[symbol] = [];
-  const buf = state.auto.patternBuffers[symbol];
-  buf.push(eo);
-  if (buf.length > 10) buf.shift();
-
-  // Visual badge: show last 5 chars on the symbol row
-  updateSymPatternBadge(symbol, buf);
-
-  if (buf.length < 10) return;
-  const pattern = buf.join('');
-
-  let contractType = null;
-  if (pattern === AUTO_PATTERNS.DIGITODD)  contractType = 'DIGITODD';
-  else if (pattern === AUTO_PATTERNS.DIGITEVEN) contractType = 'DIGITEVEN';
-  if (!contractType) return;
-
-  // Check TP/SL before firing
-  const tp = parseFloat(document.getElementById('auto-take-profit').value) || 5;
-  const sl = parseFloat(document.getElementById('auto-stop-loss').value) || 3;
-  if (state.auto.sessionPnl >= tp) { autoHitTP(); return; }
-  if (state.auto.sessionPnl <= -sl) { autoHitSL(); return; }
-
-  // Fire
-  state.auto.running      = true;
-  state.auto.activeSymbol = symbol;
-  state.auto.patternBuffers[symbol] = [];  // reset buffer after trigger
-  const dur   = parseInt(document.getElementById('auto-duration').value) || 5;
-  const stake = state.auto.currentStake;
-
-  autoLog('[' + pattern + '] on ' + symbol + ' → ' + contractType + ' stake:$' + stake.toFixed(2), 'info');
-  setAutoStatus('trading');
-  autoSendProposal(symbol, contractType, stake, dur);
-}
-
-function autoSendProposal(symbol, contractType, stake, duration) {
-  if (!state.wsAuthenticated || state.wsIsPublic) {
-    autoLog('Error: requires authenticated WS.', 'warn');
-    state.auto.running = false;
-    setAutoStatus('watching');
-    return;
-  }
-  // ── FIX: req_id MUST be a positive integer, not a string ──
-  const reqId = state.auto.reqCounter++;
-  state.auto.pendingReqId = reqId;
-
-  wsSend({
-    proposal:          1,
-    req_id:            reqId,          // integer ✓
-    // subscribe omitted → one-shot request (subscribe:0 is not a valid value)
-    amount:            stake,
-    basis:             'stake',
-    contract_type:     contractType,
-    currency:          'USD',
-    underlying_symbol: symbol,         // ✓ correct field for trading WS endpoint
-    duration:          duration,
-    duration_unit:     't',
-  });
-}
-
-function handleAutoProposal(proposal) {
-  state.auto.pendingReqId = null;
-  if (!proposal || !proposal.id) {
-    autoLog('Empty proposal received.', 'warn');
-    state.auto.running = false;
-    if (state.auto.status === 'trading') setAutoStatus('watching');
-    return;
-  }
-  const askPrice = parseFloat(proposal.ask_price || proposal.display_value || state.auto.currentStake);
-  autoLog('Proposal ok. Payout:$' + parseFloat(proposal.payout||0).toFixed(2) + '. Buying…', 'info');
-  wsSend({ buy: String(proposal.id), price: askPrice });
-}
-
-function handleAutoBuyResponse(buy) {
-  if (buy.error) {
-    autoLog('Buy error: ' + (buy.error.message || JSON.stringify(buy.error)), 'loss');
-    state.auto.running = false;
-    state.auto.pendingReqId = null;
-    if (state.auto.status === 'trading') setAutoStatus('watching');
-    return;
-  }
-  const contractId = String(buy.contract_id || buy.id || '');
-  state.auto.activeContractId = contractId;
-  autoLog('Contract #' + contractId + ' open. Awaiting result…', 'info');
-
-  // Track in positions tab
-  const pos = {
-    id: contractId,
-    type: buy.longcode ? (buy.longcode.includes('even') ? 'DIGITEVEN' : 'DIGITODD') : 'AUTO',
-    symbol: state.auto.activeSymbol || '—',
-    stake: state.auto.currentStake,
-    digit: '—',
-    duration: parseInt(document.getElementById('auto-duration').value) || 5,
-    status: 'open',
-    time: new Date().toLocaleTimeString(),
-    payout: parseFloat(buy.payout || 0),
-  };
-  state.positions.unshift(pos);
-  renderPortfolio();
-
-  if (buy.contract_id) wsSend({ proposal_open_contract: 1, contract_id: buy.contract_id, subscribe: 1 });
-}
-
-function handleAutoPOC(poc) {
-  if (String(poc.contract_id) !== state.auto.activeContractId) return;
-  if (poc.status !== 'won' && poc.status !== 'lost') return;
-
-  const baseStake  = parseFloat(document.getElementById('auto-base-stake').value) || 0.35;
-  const mult       = parseFloat(document.getElementById('auto-martingale-mult').value) || 2;
-  const profit     = parseFloat(poc.profit || 0);
-  const wonStake   = state.auto.currentStake;
-
-  state.auto.sessionTrades++;
-  state.sessionStats.trades++;
-
-  if (poc.status === 'won') {
-    state.auto.sessionWins++;
-    state.sessionStats.wins++;
-    state.auto.sessionPnl   += profit;
-    state.sessionStats.pnl  += profit;
-    state.auto.currentStake  = baseStake;  // reset
-    autoLog('WON +$' + profit.toFixed(2)
-      + ' | P&L: ' + (state.auto.sessionPnl>=0?'+':'') + '$' + state.auto.sessionPnl.toFixed(2)
-      + ' | Stake reset → $' + baseStake.toFixed(2), 'win');
-    showToast('🏆 Won! +$' + profit.toFixed(2), 'success');
-  } else {
-    state.sessionStats.pnl  -= wonStake;
-    state.auto.sessionPnl   -= wonStake;
-    state.auto.currentStake  = parseFloat((wonStake * mult).toFixed(2));
-    autoLog('LOST -$' + wonStake.toFixed(2)
-      + ' | P&L: ' + (state.auto.sessionPnl>=0?'+':'') + '$' + state.auto.sessionPnl.toFixed(2)
-      + ' | Next stake × ' + mult + ' → $' + state.auto.currentStake.toFixed(2), 'loss');
-    showToast('❌ Lost -$' + wonStake.toFixed(2), 'error');
-  }
-
-  state.auto.running = false;
-  state.auto.activeContractId = null;
-  updateAutoSessionDisplay();
-
-  // Update position status
-  const pos = state.positions.find(p => String(p.id) === String(poc.contract_id));
-  if (pos) { pos.status = poc.status; renderPortfolio(); addToStatement(pos, poc); }
-
-  // Check TP/SL after settlement
-  const tp = parseFloat(document.getElementById('auto-take-profit').value) || 5;
-  const sl = parseFloat(document.getElementById('auto-stop-loss').value) || 3;
-  if (state.auto.sessionPnl >= tp) { autoHitTP(); return; }
-  if (state.auto.sessionPnl <= -sl) { autoHitSL(); return; }
-
-  // Resume watching unless paused/stopped
-  if (state.auto.status === 'trading') setAutoStatus('watching');
-}
-
-function autoHitTP() {
-  autoStop();
-  const pnl = state.auto.sessionPnl;
-  setAutoStatus('stopped');
-  document.getElementById('auto-status-text').textContent = '🎯 Take profit hit! +$' + pnl.toFixed(2);
-  autoLog('Take profit reached! +$' + pnl.toFixed(2), 'win');
-  showToast('🎯 Take profit hit! +$' + pnl.toFixed(2), 'success');
-}
-function autoHitSL() {
-  autoStop();
-  const pnl = Math.abs(state.auto.sessionPnl);
-  setAutoStatus('stopped');
-  document.getElementById('auto-status-text').textContent = '🛑 Stop loss hit! -$' + pnl.toFixed(2);
-  autoLog('Stop loss reached! -$' + pnl.toFixed(2), 'loss');
-  showToast('🛑 Stop loss hit! -$' + pnl.toFixed(2), 'error');
-}
-
-function updateSymPatternBadge(symbol, buf) {
-  const el = document.getElementById('sym-' + symbol);
-  if (!el) return;
-  let badge = el.querySelector('.sym-pattern-badge');
-  if (!badge) {
-    badge = document.createElement('span');
-    el.querySelector('.sym-name').appendChild(badge);
-  }
-  const pattern = buf.join('');
-  const isMatch = pattern === AUTO_PATTERNS.DIGITEVEN || pattern === AUTO_PATTERNS.DIGITODD;
-  badge.className = 'sym-pattern-badge' + (isMatch ? ' match' : '');
-  badge.textContent = buf.slice(-5).join('');
-}
-
-// ═══════════════════════════════════════════════
-// PORTFOLIO / STATEMENT
-// ═══════════════════════════════════════════════
-function renderPortfolio() {
-  const el = document.getElementById('portfolio-content');
-  if (!state.positions.length) { el.innerHTML = '<div class="empty"><div class="empty-icon">📊</div>No open positions yet.</div>'; return; }
-  el.innerHTML = `
-    <div class="table-wrap">
-      <table class="statement-table">
-        <thead><tr>
-          <th>#ID</th><th>Time</th><th>Type</th><th>Symbol</th>
-          <th>Stake</th><th>Payout</th><th>Status</th>
-        </tr></thead>
-        <tbody>
-        ${state.positions.map(p => `
-          <tr>
-            <td class="mono" style="font-size:0.72rem;">${p.id}</td>
-            <td>${p.time}</td>
-            <td>${p.type}</td>
-            <td class="mono">${p.symbol}</td>
-            <td class="mono">USD ${p.stake.toFixed(2)}</td>
-            <td class="mono">USD ${parseFloat(p.payout||0).toFixed(2)}</td>
-            <td><span class="pos-status ${p.status}">${p.status.toUpperCase()}</span></td>
-          </tr>
-        `).join('')}
-        </tbody>
-      </table>
-    </div>`;
-}
-
-function addToStatement(pos, poc) {
-  state.statement.unshift({ id: pos.id, time: pos.time, type: pos.type, symbol: pos.symbol, stake: pos.stake, payout: poc.payout || 0, profit: parseFloat(poc.profit || 0), status: pos.status });
-  renderStatement();
-}
-
-function renderStatement() {
-  const el = document.getElementById('statement-content');
-  if (!state.statement.length) { el.innerHTML = '<div class="empty"><div class="empty-icon">📋</div>No closed trades yet.</div>'; return; }
-  el.innerHTML = `
-    <div class="table-wrap">
-      <table class="statement-table">
-        <thead><tr>
-          <th>#ID</th><th>Time</th><th>Type</th><th>Symbol</th>
-          <th>Stake</th><th>Payout</th><th>P&amp;L</th><th>Result</th>
-        </tr></thead>
-        <tbody>
-        ${state.statement.map(s => `
-          <tr>
-            <td class="mono" style="font-size:0.72rem;">${s.id}</td>
-            <td>${s.time}</td>
-            <td>${s.type}</td>
-            <td class="mono">${s.symbol}</td>
-            <td class="mono">USD ${s.stake.toFixed(2)}</td>
-            <td class="mono">USD ${parseFloat(s.payout).toFixed(2)}</td>
-            <td class="${s.profit >= 0 ? 'profit-cell' : 'loss-cell'}">${s.profit >= 0 ? '+' : ''}USD ${s.profit.toFixed(2)}</td>
-            <td><span class="pos-status ${s.status}">${s.status.toUpperCase()}</span></td>
-          </tr>
-        `).join('')}
-        </tbody>
-      </table>
-    </div>`;
-}
-
-function handleBalance(balance) {
-  const bal = parseFloat(balance.balance || 0).toFixed(2);
-  const cur = balance.currency || 'USD';
-  document.getElementById('stat-balance').textContent = `${cur} ${bal}`;
-  const balEl = document.getElementById('topbar-balance');
-  if (balEl) balEl.textContent = `${cur} ${bal}`;
-}
-
-function handlePortfolio(portfolio) {
-  const contracts = portfolio.contracts || [];
-  contracts.forEach(c => {
-    if (!state.positions.find(p => String(p.id) === String(c.contract_id))) {
-      state.positions.push({ id: c.contract_id, type: c.contract_type, symbol: c.underlying || c.symbol, stake: parseFloat(c.buy_price || 0), digit: '—', duration: '—', status: 'open', time: new Date(c.date_start * 1000).toLocaleTimeString(), payout: parseFloat(c.payout || 0) });
+    function generateState() {
+        return Array.from(crypto.getRandomValues(new Uint8Array(16)))
+            .map(b => b.toString(16).padStart(2, '0')).join('');
     }
-  });
-  renderPortfolio();
-}
 
-function handleStatement(stmt) {
-  (stmt.transactions || []).forEach(t => {
-    state.statement.push({ id: t.transaction_id, time: new Date(t.transaction_time * 1000).toLocaleTimeString(), type: t.action_type, symbol: t.symbol || '—', stake: parseFloat(t.amount || 0), payout: 0, profit: parseFloat(t.amount || 0), status: t.action_type });
-  });
-  renderStatement();
-}
+    // ════════════════════════════════════════════════════
+    // OAuth flow
+    // ════════════════════════════════════════════════════
+    async function startLogin() {
+        const verifier   = generateCodeVerifier();
+        const challenge  = await generateCodeChallenge(verifier);
+        const state      = generateState();
 
-function handlePOC(poc) {
-  // Route auto-trader POC
-  if (state.auto.activeContractId && String(poc.contract_id) === state.auto.activeContractId) {
-    handleAutoPOC(poc);
-    return;
-  }
-  // Generic settlement for non-auto contracts
-  const pos = state.positions.find(p => String(p.id) === String(poc.contract_id));
-  if (!pos) return;
-  if (poc.status === 'won' || poc.status === 'lost') {
-    pos.status = poc.status;
-    if (poc.status === 'won') {
-      state.sessionStats.wins++;
-      state.sessionStats.pnl += parseFloat(poc.profit || 0);
-    } else {
-      state.sessionStats.pnl -= pos.stake;
+        sessionStorage.setItem('pkce_code_verifier', verifier);
+        sessionStorage.setItem('oauth_state', state);
+
+        const url = new URL(AUTH_URL);
+        url.searchParams.set('response_type',          'code');
+        url.searchParams.set('client_id',              CLIENT_ID);
+        url.searchParams.set('redirect_uri',           REDIRECT_URI);
+        url.searchParams.set('scope',                  SCOPE);
+        url.searchParams.set('state',                  state);
+        url.searchParams.set('code_challenge',         challenge);
+        url.searchParams.set('code_challenge_method',  'S256');
+
+        window.location.href = url.toString();
     }
-    renderPortfolio(); addToStatement(pos, poc);
-  }
-}
 
-// ═══════════════════════════════════════════════
-// UI HELPERS
-// ═══════════════════════════════════════════════
-function switchTab(tab) {
-  document.querySelectorAll('.tab').forEach((t,i) => {
-    const names = ['trade','positions','statement'];
-    t.classList.toggle('active', names[i] === tab);
-  });
-  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-  document.getElementById(`tab-${tab}`).classList.add('active');
-  if (tab === 'positions') wsSend({ portfolio: 1 });
-  if (tab === 'statement') wsSend({ statement: 1, description: 1 });
-}
+    async function handleOAuthCallback() {
+        const params = new URLSearchParams(window.location.search);
+        const code   = params.get('code');
+        const state  = params.get('state');
+        const error  = params.get('error');
 
-let toastTimer;
-function showToast(msg, type='info') {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = `show ${type}`;
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove('show'), 4000);
-}
+        if (!code && !error) return; // Not a callback page
 
-function logout() {
-  sessionStorage.removeItem('deriv_access_token');
-  sessionStorage.removeItem('deriv_token_expiry');
-  if (state.ws) state.ws.close();
-  window.location.reload();
-}
+        // Clear the query string immediately to avoid re-processing on refresh
+        window.history.replaceState({}, document.title, window.location.pathname);
 
-// ═══════════════════════════════════════════════
-// BOOTSTRAP
-// ═══════════════════════════════════════════════
-(async function() {
-  const urlParams = new URLSearchParams(window.location.search);
-  if (urlParams.has('code')) { await handleCallback(); return; }
-  if (urlParams.has('error')) { showToast(urlParams.get('error_description') || urlParams.get('error'), 'error'); return; }
-  const storedToken = sessionStorage.getItem('deriv_access_token');
-  const tokenExpiry = sessionStorage.getItem('deriv_token_expiry');
-  if (storedToken && tokenExpiry && Date.now() < parseInt(tokenExpiry)) {
-    state.accessToken = storedToken;
-    await initApp();
-    return;
-  }
-  document.getElementById('login-screen').style.display = 'flex';
-})();
+        if (error) {
+            alert(`Deriv login failed: ${params.get('error_description') || error}`);
+            return;
+        }
+
+        const savedState    = sessionStorage.getItem('oauth_state');
+        const codeVerifier  = sessionStorage.getItem('pkce_code_verifier');
+
+        if (state !== savedState) {
+            alert('Security error: state mismatch. Please try logging in again.');
+            return;
+        }
+
+        // Exchange code for access token
+        try {
+            const resp = await fetch(TOKEN_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({
+                    grant_type:    'authorization_code',
+                    client_id:     CLIENT_ID,
+                    code:          code,
+                    redirect_uri:  REDIRECT_URI,
+                    code_verifier: codeVerifier,
+                })
+            });
+
+            if (!resp.ok) {
+                const err = await resp.json().catch(() => ({}));
+                throw new Error(err.error_description || `HTTP ${resp.status}`);
+            }
+
+            const data = await resp.json();
+            accessToken = data.access_token;
+
+            // Store in sessionStorage (cleared on tab close, not persisted across sessions)
+            sessionStorage.setItem('deriv_access_token', accessToken);
+            // Clear PKCE values immediately after use
+            sessionStorage.removeItem('pkce_code_verifier');
+            sessionStorage.removeItem('oauth_state');
+
+            await loadAccounts();
+        } catch (e) {
+            alert(`Token exchange failed: ${e.message}`);
+        }
+    }
+
+    async function loadAccounts() {
+        if (!accessToken) return;
+
+        try {
+            const resp = await fetch(`${API_BASE}/trading/v1/options/accounts`, {
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`,
+                    'Deriv-App-ID':  CLIENT_ID,
+                }
+            });
+
+            if (!resp.ok) {
+                const err = await resp.json().catch(() => ({}));
+                throw new Error(err.errors?.[0]?.message || `HTTP ${resp.status}`);
+            }
+
+            const data = await resp.json();
+            const accounts = data.data || data.accounts || [];
+
+            if (accounts.length === 0) {
+                alert('No trading accounts found. Please create an account on Deriv first.');
+                return;
+            }
+
+            elements.accountSelect.innerHTML = accounts.map(acc =>
+                `<option value="${acc.account_id}">${acc.account_id} (${acc.account_type || 'unknown'} · ${acc.currency || 'USD'})</option>`
+            ).join('');
+
+            // Restore previously selected account if still in the list
+            if (selectedAccountId && accounts.some(a => a.account_id === selectedAccountId)) {
+                elements.accountSelect.value = selectedAccountId;
+            } else {
+                selectedAccountId = accounts[0].account_id;
+                sessionStorage.setItem('deriv_account_id', selectedAccountId);
+            }
+
+            showLoggedIn();
+        } catch (e) {
+            alert(`Failed to load accounts: ${e.message}`);
+            logout();
+        }
+    }
+
+    function showLoggedIn() {
+        elements.authBlock.style.display    = 'none';
+        elements.accountBlock.style.display = 'block';
+        elements.connectBtn.disabled = false;
+    }
+
+    function showLoggedOut() {
+        elements.authBlock.style.display    = 'block';
+        elements.accountBlock.style.display = 'none';
+        elements.connectBtn.disabled = true;
+        elements.startBtn.disabled   = true;
+    }
+
+    function logout() {
+        accessToken       = null;
+        selectedAccountId = null;
+        sessionStorage.removeItem('deriv_access_token');
+        sessionStorage.removeItem('deriv_account_id');
+        if (ws) { try { ws.close(); } catch(e) {} ws = null; }
+        if (isRunning) stopBot();
+        updateConnStatus(false);
+        showLoggedOut();
+    }
+
+    // ════════════════════════════════════════════════════
+    // WebSocket connection via OTP
+    // ════════════════════════════════════════════════════
+    async function connectWebSocket() {
+        if (!accessToken || !selectedAccountId) {
+            alert('Please log in and select an account first.');
+            return;
+        }
+
+        updateBotStatus('Connecting…', 'paused');
+
+        try {
+            // Step 1: Get authenticated WebSocket URL via OTP REST endpoint
+            const otpResp = await fetch(
+                `${API_BASE}/trading/v1/options/accounts/${selectedAccountId}/otp`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`,
+                        'Deriv-App-ID':  CLIENT_ID,
+                    }
+                }
+            );
+
+            if (!otpResp.ok) {
+                const err = await otpResp.json().catch(() => ({}));
+                throw new Error(err.errors?.[0]?.message || `OTP error HTTP ${otpResp.status}`);
+            }
+
+            const otpData = await otpResp.json();
+            const wsUrl   = otpData.data?.url || otpData.url;
+
+            if (!wsUrl) throw new Error('No WebSocket URL in OTP response');
+
+            // Step 2: Connect to authenticated WebSocket
+            if (ws) { try { ws.close(); } catch(e) {} ws = null; }
+
+            ws = new WebSocket(wsUrl);
+            ws.onopen    = () => {
+                reconnectAttempts = 0;
+                if (reconnectTimer) clearTimeout(reconnectTimer);
+                updateConnStatus(true);
+                // Subscribe to balance immediately on connect
+                ws.send(JSON.stringify({ balance: 1, subscribe: 1 }));
+            };
+            ws.onmessage = handleMessage;
+            ws.onclose   = () => {
+                updateConnStatus(false);
+                if (isRunning) {
+                    reconnectTimer = setTimeout(reconnectWebSocket, RECONNECT_INTERVAL);
+                }
+            };
+            ws.onerror = (err) => {
+                console.error('WebSocket error', err);
+                updateBotStatus('Conn Error', 'error');
+            };
+
+        } catch (e) {
+            console.error('Connect failed:', e);
+            updateBotStatus('Conn Error', 'error');
+            updateConnStatus(false);
+            alert(`Connection failed: ${e.message}`);
+        }
+    }
+
+    async function reconnectWebSocket() {
+        if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
+            stopBotWithError('Max reconnection attempts reached');
+            return;
+        }
+        reconnectAttempts++;
+        updateBotStatus('Reconnecting…', 'paused');
+
+        // Re-request a fresh OTP (OTPs are single-use and short-lived)
+        try {
+            await connectWebSocket();
+        } catch(e) {
+            console.error('Reconnect failed:', e);
+            reconnectTimer = setTimeout(reconnectWebSocket, RECONNECT_INTERVAL);
+        }
+    }
+
+    // ════════════════════════════════════════════════════
+    // Martingale logic
+    // ════════════════════════════════════════════════════
+    function getInitialStake() { return r2(parseFloat(elements.initialStake.value) || 0); }
+    function getMartingale()   { return parseFloat(elements.martingale.value) || 1; }
+
+    function finalizeCycle(cycleNetProfit, stakeUsed) {
+        const initial = getInitialStake();
+        const mart    = getMartingale();
+
+        if (cycleNetProfit < 0) {
+            lossStreakActive = true;
+            currentStake = r2(stakeUsed * mart);
+            if (currentStake < initial) currentStake = initial;
+            console.log(`Net loss. New stake: ${fmt(currentStake)}`);
+        } else {
+            if (lossStreakActive) {
+                if (botTotalProfit > peakProfit) {
+                    peakProfit       = botTotalProfit;
+                    lossStreakActive = false;
+                    currentStake     = initial;
+                    console.log(`New equity high ${fmt(peakProfit)}. Stake reset to ${fmt(initial)}`);
+                } else {
+                    console.log(`Positive cycle, still recovering. peak=${fmt(peakProfit)} current=${fmt(botTotalProfit)}. Keeping stake ${fmt(currentStake)}`);
+                }
+            } else {
+                if (botTotalProfit > peakProfit) peakProfit = botTotalProfit;
+                currentStake = initial;
+            }
+        }
+
+        updateStakePreview();
+        pendingCycleResults = { overProfit: null, underProfit: null, overStake: null, underStake: null };
+    }
+
+    function updateStakePreview() {
+        const stake   = currentStake > 0 ? currentStake : getInitialStake();
+        const initial = getInitialStake();
+        const mart    = getMartingale();
+
+        elements.previewOdd.textContent  = fmt(stake);
+        elements.previewEven.textContent = fmt(stake);
+
+        let streakCount = 0;
+        if (lossStreakActive && mart > 1 && initial > 0) {
+            let s = initial;
+            while (r2(s) < r2(stake) - 0.001) { s = r2(s * mart); streakCount++; }
+        }
+        elements.oddLossDisplay.textContent  = streakCount;
+        elements.evenLossDisplay.textContent = fmt(stake);
+    }
+
+    function updateStats() {
+        elements.statBalance.textContent = fmt(currentBalance);
+        elements.statPL.textContent      = fmt(botTotalProfit);
+        elements.statPL.className = 'stat-value ' +
+            (botTotalProfit > 0 ? 'positive' : botTotalProfit < 0 ? 'negative' : '');
+
+        const stake   = currentStake > 0 ? currentStake : getInitialStake();
+        const initial = getInitialStake();
+        const mart    = getMartingale();
+        let streakCount = 0;
+        if (lossStreakActive && mart > 1 && initial > 0) {
+            let s = initial;
+            while (r2(s) < r2(stake) - 0.001) { s = r2(s * mart); streakCount++; }
+        }
+        elements.statCumLoss.textContent = streakCount;
+        elements.statMaxDD.textContent   = fmt(botMaxDrawdown);
+        elements.statWL.textContent      = `${botWins} / ${botLosses}`;
+        updateStakePreview();
+    }
+
+    function updateMaxDrawdown() {
+        if (botTotalProfit < 0) {
+            const dd = -botTotalProfit;
+            if (dd > botMaxDrawdown) botMaxDrawdown = dd;
+        }
+    }
+
+    function updateTickCounter() {
+        elements.tickCounter.textContent      = tickCount;
+        elements.tickBarFill.style.width = ((tickCount / CYCLE_TICKS) * 100) + '%';
+    }
+
+    function updateBotStatus(status, type) {
+        elements.botLabel.textContent = status;
+        elements.botDot.className     = 'status-dot ' + (type || 'idle');
+    }
+
+    function updateConnStatus(connected) {
+        if (connected) {
+            elements.connDot.className   = 'status-dot connected';
+            elements.connLabel.textContent = 'Connected';
+            elements.connectBtn.innerHTML = '<i class="fas fa-unlink"></i> Disconnect';
+            elements.startBtn.disabled = false;
+        } else {
+            elements.connDot.className   = 'status-dot disconnected';
+            elements.connLabel.textContent = 'Disconnected';
+            elements.connectBtn.innerHTML = '<i class="fas fa-plug"></i> Connect';
+            elements.startBtn.disabled = true;
+            elements.pauseBtn.disabled = true;
+            elements.stopBtn.disabled  = true;
+        }
+    }
+
+    function addLog(trade) {
+        const row   = document.createElement('tr');
+        const isWin = trade.profit > 0;
+        row.innerHTML = `
+            <td>${new Date().toLocaleTimeString()}</td>
+            <td class="td-type">${trade.type}</td>
+            <td class="td-stake">${fmt(trade.stake)}</td>
+            <td><span class="badge ${isWin ? 'badge-win' : 'badge-loss'}">${isWin ? 'Win' : 'Loss'}</span></td>
+            <td class="${isWin ? 'profit-pos' : 'profit-neg'}">${isWin ? '+' : ''}${fmt(trade.profit)}</td>
+        `;
+        elements.tradeLog.prepend(row);
+        while (elements.tradeLog.rows.length > 200) {
+            elements.tradeLog.deleteRow(elements.tradeLog.rows.length - 1);
+        }
+    }
+
+    // ════════════════════════════════════════════════════
+    // Trading
+    // ════════════════════════════════════════════════════
+    function executeTrades() {
+        if (!isRunning || isPaused) return;
+        if (tradingInProgress) {
+            console.log('Trade already in progress, skipping');
+            return;
+        }
+
+        const stake = r2(currentStake > 0 ? currentStake : getInitialStake());
+        if (stake <= 0) { stopBotWithError('Invalid stake (<=0)'); return; }
+
+        tradingInProgress = true;
+
+        const buyRequest = (type, barrier, s) => ({
+            buy: '1',
+            price: s,
+            parameters: {
+                amount:           s,
+                basis:            'stake',
+                contract_type:    type,
+                currency:         'USD',
+                duration:         1,
+                duration_unit:    't',
+                underlying_symbol:'1HZ10V',
+                barrier:          String(barrier),
+            },
+            passthrough: { type: type, stake: s },
+            subscribe: 1
+        });
+
+        pendingCycleResults = { overProfit: null, underProfit: null, overStake: null, underStake: null };
+        expectedContractTypes.clear();
+        expectedContractTypes.add('DIGITOVER');
+        expectedContractTypes.add('DIGITUNDER');
+
+        if (ws.readyState !== WebSocket.OPEN) {
+            tradingInProgress = false;
+            stopBotWithError('WebSocket not open at trade time');
+            return;
+        }
+
+        // Both contracts sent simultaneously — zero delay
+        ws.send(JSON.stringify(buyRequest('DIGITOVER',  '2', stake)));
+        ws.send(JSON.stringify(buyRequest('DIGITUNDER', '7', stake)));
+        console.log(`Placed OVER=2 ${fmt(stake)} UNDER=7 ${fmt(stake)} [simultaneous]`);
+    }
+
+    function handleContractResult(contract) {
+        const info = activeContracts.get(contract.contract_id);
+        if (!info) return;
+
+        const profit = contract.profit;
+        const stake  = info.stake;
+
+        botTotalProfit += profit;
+        if (profit > 0) botWins++;
+        else botLosses++;
+
+        addLog({ type: info.type, stake, profit });
+        activeContracts.delete(contract.contract_id);
+
+        if (info.type === 'DIGITOVER') {
+            pendingCycleResults.overProfit = profit;
+            pendingCycleResults.overStake  = stake;
+        } else if (info.type === 'DIGITUNDER') {
+            pendingCycleResults.underProfit = profit;
+            pendingCycleResults.underStake  = stake;
+        }
+
+        updateMaxDrawdown();
+        updateStats();
+
+        // Finalize only when both contracts have settled
+        if (activeContracts.size === 0 &&
+            pendingCycleResults.overProfit  !== null &&
+            pendingCycleResults.underProfit !== null) {
+
+            const net       = pendingCycleResults.overProfit + pendingCycleResults.underProfit;
+            const stakeUsed = pendingCycleResults.overStake;
+            console.log(`Cycle: OVER=${fmt(pendingCycleResults.overProfit)} UNDER=${fmt(pendingCycleResults.underProfit)} Net=${fmt(net)}`);
+
+            finalizeCycle(net, stakeUsed);
+            tradingInProgress = false;
+        }
+
+        checkTPSLConditions();
+    }
+
+    function checkTPSLConditions() {
+        const tp = parseFloat(elements.takeProfit.value) || 0;
+        const sl = parseFloat(elements.stopLoss.value)   || 0;
+        if (tp > 0 && botTotalProfit >= tp)  { stopBotWithMessage('Take Profit Hit', 'running'); return true; }
+        if (sl > 0 && botTotalProfit <= -sl) { stopBotWithMessage('Stop Loss Hit', 'error');     return true; }
+        return false;
+    }
+
+    function stopBotWithError(msg) {
+        console.error(msg);
+        updateBotStatus('Error', 'error');
+        stopBot();
+    }
+
+    function stopBotWithMessage(msg, type) { stopBot(); updateBotStatus(msg, type); }
+
+    function stopBot() {
+        isRunning         = false;
+        isPaused          = false;
+        tickCount         = 0;
+        tradingInProgress = false;
+        elements.startBtn.disabled = false;
+        elements.pauseBtn.disabled = true;
+        elements.stopBtn.disabled  = true;
+        elements.pauseBtn.innerHTML = '<i class="fas fa-pause"></i> Pause';
+        updateTickCounter();
+        if (ws && ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({ forget_all: 'ticks' }));
+            ws.send(JSON.stringify({ forget_all: 'proposal_open_contract' }));
+        }
+        const label = elements.botLabel.textContent;
+        if (!label.includes('Error') && !label.includes('Hit')) {
+            updateBotStatus('Stopped', 'idle');
+        }
+    }
+
+    // ════════════════════════════════════════════════════
+    // WebSocket message handler
+    // ════════════════════════════════════════════════════
+    function handleMessage(msg) {
+        let data;
+        try { data = JSON.parse(msg.data); } catch(e) { return; }
+
+        if (data.error) {
+            console.error('API Error:', data.error);
+            if (data.echo_req?.buy) {
+                const type = data.echo_req.passthrough?.type || 'unknown';
+                console.error(`Buy failed for ${type}: ${data.error.message}`);
+                stopBotWithError(`Buy error (${type}): ${data.error.message}`);
+            }
+            return;
+        }
+
+        switch (data.msg_type) {
+            case 'balance':
+                currentBalance = data.balance.balance;
+                if (initialBalance === 0) initialBalance = currentBalance;
+                updateStats();
+                break;
+
+            case 'tick':
+                if (isRunning && !isPaused) {
+                    tickCount++;
+                    updateTickCounter();
+                    if (tickCount >= CYCLE_TICKS) {
+                        tickCount = 0;
+                        executeTrades();
+                    }
+                }
+                break;
+
+            case 'buy': {
+                const contractId = data.buy.contract_id;
+                const type  = data.echo_req.passthrough.type;
+                const stake = data.echo_req.passthrough.stake;
+                activeContracts.set(contractId, { type, stake });
+                expectedContractTypes.delete(type);
+                break;
+            }
+
+            case 'proposal_open_contract':
+                if (data.proposal_open_contract?.is_sold &&
+                    expectedContractTypes.size === 0) {
+                    handleContractResult(data.proposal_open_contract);
+                }
+                break;
+        }
+    }
+
+    // ════════════════════════════════════════════════════
+    // Button handlers
+    // ════════════════════════════════════════════════════
+    elements.loginBtn.onclick = () => startLogin();
+
+    elements.logoutBtn.onclick = () => {
+        if (isRunning) stopBot();
+        logout();
+    };
+
+    elements.accountSelect.onchange = () => {
+        selectedAccountId = elements.accountSelect.value;
+        sessionStorage.setItem('deriv_account_id', selectedAccountId);
+        // Disconnect if already connected — user must reconnect with new account
+        if (ws && ws.readyState === WebSocket.OPEN) {
+            ws.close();
+            updateConnStatus(false);
+            if (isRunning) stopBot();
+        }
+    };
+
+    elements.connectBtn.onclick = async () => {
+        if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
+            ws.close();
+            if (reconnectTimer) clearTimeout(reconnectTimer);
+            updateConnStatus(false);
+            if (isRunning) stopBot();
+            elements.connectBtn.innerHTML = '<i class="fas fa-plug"></i> Connect';
+            return;
+        }
+        await connectWebSocket();
+    };
+
+    elements.startBtn.onclick = () => {
+        if (!ws || ws.readyState !== WebSocket.OPEN) { alert('Please connect first'); return; }
+
+        botTotalProfit    = 0;
+        botWins           = 0;
+        botLosses         = 0;
+        botMaxDrawdown    = 0;
+        peakProfit        = 0;
+        lossStreakActive  = false;
+        currentStake      = getInitialStake();
+        tickCount         = 0;
+        activeContracts.clear();
+        pendingCycleResults = { overProfit: null, underProfit: null, overStake: null, underStake: null };
+        expectedContractTypes.clear();
+        tradingInProgress = false;
+        elements.tradeLog.innerHTML = '';
+
+        updateStats();
+        updateTickCounter();
+
+        isRunning = true;
+        isPaused  = false;
+        elements.startBtn.disabled  = true;
+        elements.pauseBtn.disabled  = false;
+        elements.stopBtn.disabled   = false;
+        elements.pauseBtn.innerHTML = '<i class="fas fa-pause"></i> Pause';
+        updateBotStatus('Running', 'running');
+
+        ws.send(JSON.stringify({ ticks: '1HZ10V', subscribe: 1 }));
+    };
+
+    elements.pauseBtn.onclick = () => {
+        if (!isRunning) return;
+        isPaused = !isPaused;
+        elements.pauseBtn.innerHTML = isPaused
+            ? '<i class="fas fa-play"></i> Resume'
+            : '<i class="fas fa-pause"></i> Pause';
+        updateBotStatus(isPaused ? 'Paused' : 'Running', isPaused ? 'paused' : 'running');
+    };
+
+    elements.stopBtn.onclick = () => stopBot();
+
+    [elements.initialStake, elements.martingale].forEach(inp =>
+        inp.addEventListener('input', () => updateStakePreview())
+    );
+
+    // ════════════════════════════════════════════════════
+    // Initialisation — handle OAuth callback or restore session
+    // ════════════════════════════════════════════════════
+    (async function init() {
+        updateStats();
+        updateTickCounter();
+
+        // Check if this is a redirect back from Deriv OAuth
+        const params = new URLSearchParams(window.location.search);
+        if (params.has('code') || params.has('error')) {
+            await handleOAuthCallback();
+            return;
+        }
+
+        // Restore session if token already in sessionStorage
+        if (accessToken) {
+            await loadAccounts();
+        } else {
+            showLoggedOut();
+        }
+    })();
+
 </script>
 </body>
 </html>
