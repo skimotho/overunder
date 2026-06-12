@@ -751,6 +751,7 @@
     let reconnectTimer    = null;
     let tradingInProgress = false;
     let expectedContractTypes = new Set();
+    let pocQueue = new Map(); // queued POC messages that arrived before buy confirmation
 
     // ── Martingale state ──
     let currentStake     = 0;
@@ -1204,6 +1205,7 @@
 
         pendingCycleResults = { overProfit: null, underProfit: null, overStake: null, underStake: null };
         expectedContractTypes.clear();
+        pocQueue.clear();
         expectedContractTypes.add('DIGITOVER');
         expectedContractTypes.add('DIGITUNDER');
 
@@ -1223,10 +1225,11 @@
         const info = activeContracts.get(contract.contract_id);
         if (!info) return;
 
-        const profit = contract.profit;
-        const stake  = info.stake;
+        // Bug 1 fix: API returns profit as a string — always coerce to number
+        const profit = parseFloat(contract.profit);
+        const stake  = parseFloat(info.stake);
 
-        botTotalProfit += profit;
+        botTotalProfit = r2(botTotalProfit + profit);
         if (profit > 0) botWins++;
         else botLosses++;
 
@@ -1241,17 +1244,21 @@
             pendingCycleResults.underStake  = stake;
         }
 
+        // Bug 2 fix: updateMaxDrawdown sees updated botTotalProfit (already updated above)
         updateMaxDrawdown();
         updateStats();
 
-        // Finalize only when both contracts have settled
-        if (activeContracts.size === 0 &&
-            pendingCycleResults.overProfit  !== null &&
+        // Finalize only when both contracts of this cycle have settled.
+        // Bug 4 fix: guard purely on pendingCycleResults nullity — not on expectedContractTypes.
+        // A POC message can arrive before the buy confirmation for the sibling contract arrives,
+        // so expectedContractTypes.size may still be 1 when the first result comes in,
+        // causing it to be silently dropped and the cycle never finalizing.
+        if (pendingCycleResults.overProfit  !== null &&
             pendingCycleResults.underProfit !== null) {
 
-            const net       = pendingCycleResults.overProfit + pendingCycleResults.underProfit;
+            const net       = r2(pendingCycleResults.overProfit + pendingCycleResults.underProfit);
             const stakeUsed = pendingCycleResults.overStake;
-            console.log(`Cycle: OVER=${fmt(pendingCycleResults.overProfit)} UNDER=${fmt(pendingCycleResults.underProfit)} Net=${fmt(net)}`);
+            console.log(`Cycle settled. OVER=${fmt(pendingCycleResults.overProfit)} UNDER=${fmt(pendingCycleResults.underProfit)} Net=${fmt(net)}`);
 
             finalizeCycle(net, stakeUsed);
             tradingInProgress = false;
@@ -1331,21 +1338,37 @@
                 }
                 break;
 
+
             case 'buy': {
                 const contractId = data.buy.contract_id;
                 const type  = data.echo_req.passthrough.type;
                 const stake = data.echo_req.passthrough.stake;
                 activeContracts.set(contractId, { type, stake });
                 expectedContractTypes.delete(type);
+
+                // Bug 4 fix: drain any POC messages that arrived before this buy confirmation.
+                // These were queued in pocQueue because activeContracts didn't yet have the id.
+                const queued = pocQueue.get(contractId);
+                if (queued) {
+                    pocQueue.delete(contractId);
+                    handleContractResult(queued);
+                }
                 break;
             }
 
-            case 'proposal_open_contract':
-                if (data.proposal_open_contract?.is_sold &&
-                    expectedContractTypes.size === 0) {
-                    handleContractResult(data.proposal_open_contract);
+            case 'proposal_open_contract': {
+                const poc = data.proposal_open_contract;
+                if (!poc?.is_sold) break;
+
+                if (activeContracts.has(poc.contract_id)) {
+                    // Buy confirmation already received — process immediately
+                    handleContractResult(poc);
+                } else {
+                    // Buy confirmation not yet received — queue until it arrives
+                    pocQueue.set(poc.contract_id, poc);
                 }
                 break;
+            }
         }
     }
 
@@ -1396,6 +1419,7 @@
         activeContracts.clear();
         pendingCycleResults = { overProfit: null, underProfit: null, overStake: null, underStake: null };
         expectedContractTypes.clear();
+        pocQueue.clear();
         tradingInProgress = false;
         elements.tradeLog.innerHTML = '';
 
