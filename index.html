@@ -483,6 +483,22 @@
         }
         .badge-win  { background: var(--green-dim);  color: var(--green); border: 1px solid rgba(46,223,120,0.35); }
         .badge-loss { background: var(--red-dim);    color: var(--red);   border: 1px solid rgba(242,73,92,0.35); }
+
+        /* ── Last digit badge ── */
+        .digit-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px; height: 24px;
+            border-radius: 50%;
+            font-family: var(--mono);
+            font-size: 12px;
+            font-weight: 700;
+            border: 1px solid transparent;
+        }
+        .digit-win     { background: var(--green-dim); color: var(--green); border-color: rgba(46,223,120,0.35); }
+        .digit-loss    { background: var(--red-dim);   color: var(--red);   border-color: rgba(242,73,92,0.35); }
+        .digit-unknown { background: transparent;      color: var(--text-muted); border-color: var(--border); }
         td.profit-pos { color: var(--green); font-weight: 700; font-size: 12.5px; }
         td.profit-neg { color: var(--red);   font-weight: 700; font-size: 12.5px; }
 
@@ -698,6 +714,7 @@
                                 <th>Time</th>
                                 <th>Contract</th>
                                 <th>Stake</th>
+                                <th>Digit</th>
                                 <th>Result</th>
                                 <th>Profit</th>
                             </tr>
@@ -1158,10 +1175,20 @@
     function addLog(trade) {
         const row   = document.createElement('tr');
         const isWin = trade.profit > 0;
+        const d     = trade.lastDigit ?? '?';
+        // Colour the digit: green if it satisfies the contract's winning condition,
+        // red if it doesn't, grey if unknown.
+        let digitClass = 'digit-unknown';
+        if (d !== '?') {
+            const n = parseInt(d, 10);
+            if (trade.type === 'DIGITOVER')  digitClass = n > 2  ? 'digit-win' : 'digit-loss';
+            if (trade.type === 'DIGITUNDER') digitClass = n < 7  ? 'digit-win' : 'digit-loss';
+        }
         row.innerHTML = `
             <td>${new Date().toLocaleTimeString()}</td>
             <td class="td-type">${trade.type}</td>
             <td class="td-stake">${fmt(trade.stake)}</td>
+            <td><span class="digit-badge ${digitClass}">${d}</span></td>
             <td><span class="badge ${isWin ? 'badge-win' : 'badge-loss'}">${isWin ? 'Win' : 'Loss'}</span></td>
             <td class="${isWin ? 'profit-pos' : 'profit-neg'}">${isWin ? '+' : ''}${fmt(trade.profit)}</td>
         `;
@@ -1229,11 +1256,21 @@
         const profit = parseFloat(contract.profit);
         const stake  = parseFloat(info.stake);
 
+        // Extract last digit from exit tick display value (e.g. "1234.5" → "5")
+        // Fallback chain: exit_tick_display_value → exit_tick → current_spot → '?'
+        const exitDisplay = String(
+            contract.exit_tick_display_value ??
+            contract.exit_tick ??
+            contract.current_spot ??
+            ''
+        );
+        const lastDigit = exitDisplay.length > 0 ? exitDisplay.slice(-1) : '?';
+
         botTotalProfit = r2(botTotalProfit + profit);
         if (profit > 0) botWins++;
         else botLosses++;
 
-        addLog({ type: info.type, stake, profit });
+        addLog({ type: info.type, stake, profit, lastDigit });
         activeContracts.delete(contract.contract_id);
 
         if (info.type === 'DIGITOVER') {
