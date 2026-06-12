@@ -619,7 +619,7 @@
 
                     <div class="field">
                         <label class="field-label">Cycle Ticks</label>
-                        <input type="number" id="cycleTicks" value="7" readonly>
+                        <input type="number" id="cycleTicks" value="7" min="1" step="1">
                     </div>
                 </div>
             </div>
@@ -686,7 +686,7 @@
                 <div class="panel-body">
                     <div class="tick-row">
                         <span class="tick-label">Tick Progress</span>
-                        <span class="tick-counter"><span id="tickCounter">0</span> / 7</span>
+                        <span class="tick-counter"><span id="tickCounter">0</span> / <span id="tickTotal">7</span></span>
                     </div>
                     <div class="tick-bar"><div class="tick-bar-fill" id="tickBarFill"></div></div>
                     <div class="stakes-row">
@@ -706,6 +706,9 @@
             <div class="panel">
                 <div class="panel-header">
                     <span class="panel-title"><i class="fas fa-stream"></i>Trade Activity</span>
+                    <button id="copyLogBtn" class="btn btn-ghost" style="padding:5px 12px;font-size:11px;gap:6px;" title="Copy log to clipboard">
+                        <i class="fas fa-copy"></i> Copy
+                    </button>
                 </div>
                 <div class="log-wrap">
                     <table>
@@ -750,7 +753,7 @@
 
     const RECONNECT_INTERVAL      = 3000;
     const MAX_RECONNECT_ATTEMPTS  = 10;
-    const CYCLE_TICKS             = 7;
+    function getCycleTicks() { return Math.max(1, parseInt(elements.cycleTicks.value, 10) || 7); }
 
     // ── Runtime state ──
     let ws                = null;
@@ -795,6 +798,7 @@
         martingale:     document.getElementById('martingale'),
         takeProfit:     document.getElementById('takeProfit'),
         stopLoss:       document.getElementById('stopLoss'),
+        copyLogBtn:     document.getElementById('copyLogBtn'),
         tradeLog:       document.getElementById('tradeLog'),
         statBalance:    document.getElementById('statBalance'),
         statPL:         document.getElementById('statPL'),
@@ -802,11 +806,13 @@
         statMaxDD:      document.getElementById('statMaxDD'),
         statWL:         document.getElementById('statWL'),
         tickCounter:    document.getElementById('tickCounter'),
+        tickTotal:      document.getElementById('tickTotal'),
         tickBarFill:    document.getElementById('tickBarFill'),
         previewOdd:     document.getElementById('previewOdd'),
         previewEven:    document.getElementById('previewEven'),
         oddLossDisplay: document.getElementById('oddLossDisplay'),
         evenLossDisplay:document.getElementById('evenLossDisplay'),
+        cycleTicks:     document.getElementById('cycleTicks'),
         connDot:        document.getElementById('connDot'),
         connLabel:      document.getElementById('connLabel'),
         botDot:         document.getElementById('botDot'),
@@ -1074,6 +1080,9 @@
     function getMartingale()   { return parseFloat(elements.martingale.value) || 1; }
 
     function finalizeCycle(cycleNetProfit, stakeUsed) {
+        // Max DD is updated here — after both contracts are settled and botTotalProfit reflects the full cycle
+        updateMaxDrawdown();
+
         const initial = getInitialStake();
         const mart    = getMartingale();
 
@@ -1147,8 +1156,10 @@
     }
 
     function updateTickCounter() {
+        const ct = getCycleTicks();
         elements.tickCounter.textContent      = tickCount;
-        elements.tickBarFill.style.width = ((tickCount / CYCLE_TICKS) * 100) + '%';
+        elements.tickTotal.textContent        = ct;
+        elements.tickBarFill.style.width = ((tickCount / ct) * 100) + '%';
     }
 
     function updateBotStatus(status, type) {
@@ -1281,8 +1292,7 @@
             pendingCycleResults.underStake  = stake;
         }
 
-        // Bug 2 fix: updateMaxDrawdown sees updated botTotalProfit (already updated above)
-        updateMaxDrawdown();
+        // Update W/L and running stats but NOT Max DD yet — that waits for cycle finalization
         updateStats();
 
         // Finalize only when both contracts of this cycle have settled.
@@ -1368,7 +1378,7 @@
                 if (isRunning && !isPaused) {
                     tickCount++;
                     updateTickCounter();
-                    if (tickCount >= CYCLE_TICKS) {
+                    if (tickCount >= getCycleTicks()) {
                         tickCount = 0;
                         executeTrades();
                     }
@@ -1488,6 +1498,30 @@
     [elements.initialStake, elements.martingale].forEach(inp =>
         inp.addEventListener('input', () => updateStakePreview())
     );
+
+    elements.cycleTicks.addEventListener('input', () => updateTickCounter());
+
+    elements.copyLogBtn.addEventListener('click', () => {
+        const rows = elements.tradeLog.querySelectorAll('tr');
+        if (rows.length === 0) {
+            elements.copyLogBtn.innerHTML = '<i class="fas fa-times"></i> Empty';
+            setTimeout(() => { elements.copyLogBtn.innerHTML = '<i class="fas fa-copy"></i> Copy'; }, 1500);
+            return;
+        }
+        const headers = ['Time', 'Contract', 'Stake', 'Digit', 'Result', 'Profit'];
+        const lines = [headers.join('\t')];
+        rows.forEach(row => {
+            const cells = Array.from(row.querySelectorAll('td')).map(td => td.textContent.trim());
+            lines.push(cells.join('\t'));
+        });
+        navigator.clipboard.writeText(lines.join('\n')).then(() => {
+            elements.copyLogBtn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+            setTimeout(() => { elements.copyLogBtn.innerHTML = '<i class="fas fa-copy"></i> Copy'; }, 2000);
+        }).catch(() => {
+            elements.copyLogBtn.innerHTML = '<i class="fas fa-times"></i> Failed';
+            setTimeout(() => { elements.copyLogBtn.innerHTML = '<i class="fas fa-copy"></i> Copy'; }, 2000);
+        });
+    });
 
     // ════════════════════════════════════════════════════
     // Initialisation — handle OAuth callback or restore session
