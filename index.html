@@ -619,7 +619,7 @@
 
                     <div class="field">
                         <label class="field-label">Cycle Ticks</label>
-                        <input type="number" id="cycleTicks" value="7" min="1" step="1">
+                        <input type="number" id="cycleTicks" value="9" min="1" step="1">
                     </div>
                 </div>
             </div>
@@ -1149,10 +1149,11 @@
     }
 
     function updateMaxDrawdown() {
-        if (botTotalProfit < 0) {
-            const dd = -botTotalProfit;
-            if (dd > botMaxDrawdown) botMaxDrawdown = dd;
-        }
+        // Track peak equity (highest botTotalProfit reached so far)
+        if (botTotalProfit > peakProfit) peakProfit = botTotalProfit;
+        // Drawdown = how far we've fallen from that peak
+        const dd = peakProfit - botTotalProfit;
+        if (dd > botMaxDrawdown) botMaxDrawdown = dd;
     }
 
     function updateTickCounter() {
