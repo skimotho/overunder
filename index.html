@@ -752,7 +752,6 @@
     const SCOPE        = 'trade account_manage';
 
     const RECONNECT_INTERVAL      = 3000;
-    const MAX_RECONNECT_ATTEMPTS  = 10;
     function getCycleTicks() { return Math.max(1, parseInt(elements.cycleTicks.value, 10) || 7); }
 
     // ── Runtime state ──
@@ -1058,19 +1057,16 @@
     }
 
     async function reconnectWebSocket() {
-        if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
-            stopBotWithError('Max reconnection attempts reached');
-            return;
-        }
         reconnectAttempts++;
-        updateBotStatus('Reconnecting…', 'paused');
+        const backoff = Math.min(RECONNECT_INTERVAL * reconnectAttempts, 60000); // grows up to 60s
+        updateBotStatus(`Reconnecting… (attempt ${reconnectAttempts})`, 'paused');
 
         // Re-request a fresh OTP (OTPs are single-use and short-lived)
         try {
             await connectWebSocket();
         } catch(e) {
             console.error('Reconnect failed:', e);
-            reconnectTimer = setTimeout(reconnectWebSocket, RECONNECT_INTERVAL);
+            reconnectTimer = setTimeout(reconnectWebSocket, backoff);
         }
     }
 
