@@ -619,7 +619,7 @@
 
                     <div class="field">
                         <label class="field-label">Cycle Ticks</label>
-                        <input type="number" id="cycleTicks" value="9" min="1" step="1">
+                        <input type="number" id="cycleTicks" value="7" min="1" step="1">
                     </div>
                 </div>
             </div>
@@ -775,7 +775,8 @@
 
     // ── Martingale state ──
     let currentStake     = 0;
-    let peakProfit       = 0;
+    let peakProfit       = 0;   // used by staking logic (reset detection)
+    let ddPeakProfit     = 0;   // used exclusively by Max DD calculation
     let lossStreakActive = false;
     let pendingCycleResults = { overProfit: null, underProfit: null, overStake: null, underStake: null };
 
@@ -1149,10 +1150,8 @@
     }
 
     function updateMaxDrawdown() {
-        // Track peak equity (highest botTotalProfit reached so far)
-        if (botTotalProfit > peakProfit) peakProfit = botTotalProfit;
-        // Drawdown = how far we've fallen from that peak
-        const dd = peakProfit - botTotalProfit;
+        if (botTotalProfit > ddPeakProfit) ddPeakProfit = botTotalProfit;
+        const dd = ddPeakProfit - botTotalProfit;
         if (dd > botMaxDrawdown) botMaxDrawdown = dd;
     }
 
@@ -1461,6 +1460,7 @@
         botLosses         = 0;
         botMaxDrawdown    = 0;
         peakProfit        = 0;
+        ddPeakProfit      = 0;
         lossStreakActive  = false;
         currentStake      = getInitialStake();
         tickCount         = 0;
